@@ -2,7 +2,7 @@ import { blogArticles } from '../../../data/mockData';
 
 export function BlogSection() {
   return (
-    <section className="py-20 bg-gray-50">
+    <section id="blogs" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-purple-700 rounded-2xl p-12 mb-8">
           <div className="flex items-center gap-3 mb-4">
