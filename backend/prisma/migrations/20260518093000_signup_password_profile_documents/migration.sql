@@ -1,0 +1,8 @@
+ALTER TABLE `Lead`
+    ADD COLUMN `passwordHash` VARCHAR(191) NULL,
+    MODIFY `idProofUrl` VARCHAR(191) NULL,
+    MODIFY `photoUrl` VARCHAR(191) NULL;
+
+ALTER TABLE `User`
+    MODIFY `idProofUrl` VARCHAR(191) NULL,
+    MODIFY `photoUrl` VARCHAR(191) NULL;

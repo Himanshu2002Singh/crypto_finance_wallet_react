@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum ReferralStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum UserPlanStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  reviewedLeads Lead[]
+}
+
+model Lead {
+  id                 String     @id @default(uuid())
+  fullName           String
+  email              String     @unique
+  phone              String     @unique
+  country            String
+  message            String?
+  referralCode       String?
+  idProofUrl         String?
+  photoUrl           String?
+  passwordHash       String?
+  status             LeadStatus @default(PENDING)
+  assignedBronzeReturn Decimal?  @db.Decimal(5, 2)
+  assignedSilverReturn Decimal?  @db.Decimal(5, 2)
+  assignedGoldReturn   Decimal?  @db.Decimal(5, 2)
+  assignedReferralRate Decimal?  @db.Decimal(5, 2)
+  assignedBronzeReferral Decimal? @db.Decimal(5, 2)
+  assignedSilverReferral Decimal? @db.Decimal(5, 2)
+  assignedGoldReferral   Decimal? @db.Decimal(5, 2)
+  reviewedById       String?
+  reviewedAt         DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  reviewedBy Admin? @relation(fields: [reviewedById], references: [id])
+  user       User?
+}
+
+model User {
+  id             String     @id @default(uuid())
+  fullName       String
+  email          String     @unique
+  phone          String     @unique
+  country        String
+  idProofUrl     String?
+  photoUrl       String?
+  bronzeReturnRate Decimal  @db.Decimal(5, 2)
+  silverReturnRate Decimal  @db.Decimal(5, 2)
+  goldReturnRate   Decimal  @db.Decimal(5, 2)
+  referralRate     Decimal  @db.Decimal(5, 2)
+  bronzeReferralRate Decimal @default(0) @db.Decimal(5, 2)
+  silverReferralRate Decimal @default(0) @db.Decimal(5, 2)
+  goldReferralRate   Decimal @default(0) @db.Decimal(5, 2)
+  status         UserStatus @default(PENDING)
+  passwordHash   String?
+  activatedAt    DateTime?
+  leadId         String     @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  lead           Lead       @relation(fields: [leadId], references: [id])
+  activationTokens ActivationToken[]
+  plans          UserPlan[]
+  referralsMade  ReferralRelation[] @relation("Referrer")
+  referralsReceived ReferralRelation[] @relation("Referred")
+}
+
+model ActivationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Plan {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  price     Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users UserPlan[]
+}
+
+model UserPlan {
+  id        String         @id @default(uuid())
+  status    UserPlanStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  userId String
+  planId String
+
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+}
+
+model ReferralRelation {
+  id              String         @id @default(uuid())
+  status          ReferralStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  referrerUserId  String
+  referredUserId  String @unique
+
+  referrer User @relation("Referrer", fields: [referrerUserId], references: [id])
+  referred User @relation("Referred", fields: [referredUserId], references: [id])
+}
