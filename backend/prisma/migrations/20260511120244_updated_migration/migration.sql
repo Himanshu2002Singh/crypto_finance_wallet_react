@@ -10,7 +10,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `lead` DROP COLUMN `assignedInterest`,
+ALTER TABLE `Lead` DROP COLUMN `assignedInterest`,
     DROP COLUMN `assignedReferral`,
     ADD COLUMN `assignedBronzeReturn` DECIMAL(5, 2) NULL,
     ADD COLUMN `assignedGoldReturn` DECIMAL(5, 2) NULL,
@@ -18,7 +18,7 @@ ALTER TABLE `lead` DROP COLUMN `assignedInterest`,
     ADD COLUMN `assignedSilverReturn` DECIMAL(5, 2) NULL;
 
 -- AlterTable
-ALTER TABLE `user` DROP COLUMN `interestRate`,
+ALTER TABLE `User` DROP COLUMN `interestRate`,
     ADD COLUMN `bronzeReturnRate` DECIMAL(5, 2) NOT NULL,
     ADD COLUMN `goldReturnRate` DECIMAL(5, 2) NOT NULL,
     ADD COLUMN `silverReturnRate` DECIMAL(5, 2) NOT NULL;
