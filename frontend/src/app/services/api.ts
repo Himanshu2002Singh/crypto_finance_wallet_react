@@ -1,9 +1,14 @@
 import axios from 'axios';
 
 // Get API base from environment or fallback
-const rawBaseURL = import.meta.env.VITE_API_URL || 'https://www.api.investzora.com';
-// Normalize: remove surrounding whitespace, trailing slash, and duplicate /api suffix
-const normalizedHost = rawBaseURL.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+const rawBaseURL = import.meta.env.VITE_API_URL || 'https://api.investzora.com';
+// Normalize: remove surrounding whitespace, trailing slash, duplicate /api suffix,
+// and auto-strip invalid "www.api." to "api." so SSL handshake never fails.
+let normalizedHost = rawBaseURL.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+if (normalizedHost.includes('www.api.investzora.com')) {
+  normalizedHost = normalizedHost.replace('www.api.investzora.com', 'api.investzora.com');
+}
+
 export const BASE_API_URL = `${normalizedHost}/api`;
 
 export const api = axios.create({
