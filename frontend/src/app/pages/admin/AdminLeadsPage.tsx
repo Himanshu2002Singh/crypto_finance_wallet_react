@@ -59,7 +59,7 @@ export function AdminLeadsPage() {
     }
 
     try {
-      await adminApi.post(`/admin/leads/${leadId}/approve`, {
+      const response = await adminApi.post(`/admin/leads/${leadId}/approve`, {
         bronzeReturnRate: rate.bronzeReturnRate,
         silverReturnRate: rate.silverReturnRate,
         goldReturnRate: rate.goldReturnRate,
@@ -67,8 +67,14 @@ export function AdminLeadsPage() {
         silverReferralRate: rate.silverReferralRate,
         goldReferralRate: rate.goldReferralRate,
       });
-      setMessage('Lead approved and account activation email sent.');
-      toast.success('Lead approved and account activation email sent.');
+      const responseMsg = response.data?.message;
+      if (response.data?.emailSent === false) {
+        setMessage(responseMsg || 'Lead approved, but notification email failed to send.');
+        toast.warning(responseMsg || 'Lead approved! However, notification email could not be sent (check SMTP).');
+      } else {
+        setMessage(responseMsg || 'Lead approved and account activation email sent.');
+        toast.success(responseMsg || 'Lead approved and account activation email sent.');
+      }
       await loadLeads(statusFilter);
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Unable to approve lead.';

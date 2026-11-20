@@ -126,15 +126,16 @@ export async function approveLead(input: {
     }
   }
 
+  let emailSent = false;
   try {
     await sendAccountApprovedEmail(user.email);
     console.info("Account approval email sent", { userId: user.id, email: user.email });
+    emailSent = true;
   } catch (error) {
-    console.error("Account approval email failed", { userId: user.id, error });
-    throw new Error("Account approval email failed");
+    console.warn("Account approval email failed (SMTP credentials issue), but lead was approved successfully:", { userId: user.id, error });
   }
 
-  return user;
+  return { user, emailSent };
 }
 
 export async function rejectLead(input: { leadId: string; adminId: string }) {

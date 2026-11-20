@@ -51,7 +51,7 @@ export async function adminGetLeadController(req: Request, res: Response) {
 export async function adminApproveLeadController(req: Request, res: Response) {
   const payload = approveSchema.parse(req.body);
   const adminId = req.adminId as string;
-  const user = await approveLead({
+  const { user, emailSent } = await approveLead({
     leadId: req.params.id,
     adminId,
     bronzeReturnRate: payload.bronzeReturnRate,
@@ -61,7 +61,13 @@ export async function adminApproveLeadController(req: Request, res: Response) {
     silverReferralRate: payload.silverReferralRate,
     goldReferralRate: payload.goldReferralRate
   });
-  return res.json({ user });
+  return res.json({
+    user,
+    emailSent,
+    message: emailSent
+      ? "Lead approved and account activation email sent."
+      : "Lead approved successfully! (Email not sent due to SMTP credentials issue)"
+  });
 }
 
 export async function adminRejectLeadController(req: Request, res: Response) {
