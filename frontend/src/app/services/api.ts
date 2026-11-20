@@ -1,9 +1,13 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// Get API base from environment or fallback
+const rawBaseURL = import.meta.env.VITE_API_URL || 'https://www.api.investzora.com';
+// Normalize: remove surrounding whitespace, trailing slash, and duplicate /api suffix
+const normalizedHost = rawBaseURL.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+export const BASE_API_URL = `${normalizedHost}/api`;
 
 export const api = axios.create({
-  baseURL: `${baseURL}/api`,
+  baseURL: BASE_API_URL,
 });
 
 api.interceptors.request.use((config) => {
@@ -15,7 +19,7 @@ api.interceptors.request.use((config) => {
 });
 
 export const adminApi = axios.create({
-  baseURL: `${baseURL}/api`,
+  baseURL: BASE_API_URL,
 });
 
 adminApi.interceptors.request.use((config) => {

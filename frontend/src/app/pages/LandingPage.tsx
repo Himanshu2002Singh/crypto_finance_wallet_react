@@ -5,6 +5,7 @@ import { InvestmentPlansSection } from '../components/landing/InvestmentPlansSec
 import { InvestorSection } from '../components/landing/InvestorSection';
 import { BlogSection } from '../components/landing/BlogSection';
 import { NewsletterSection } from '../components/landing/NewsletterSection';
+import { FAQSection } from '../components/landing/FAQSection';
 import { CTASection } from '../components/landing/CTASection';
 import { Footer } from '../components/Footer';
 
@@ -18,6 +19,7 @@ export function LandingPage() {
       <InvestorSection />
       <BlogSection />
       <NewsletterSection />
+      <FAQSection />
       <CTASection />
       <Footer />
     </div>

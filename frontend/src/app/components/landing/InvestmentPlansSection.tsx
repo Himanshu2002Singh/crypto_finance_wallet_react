@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface Plan {
   id: string;
@@ -21,6 +22,7 @@ const defaultPlans: Plan[] = [
 ];
 
 export function InvestmentPlansSection() {
+  const { user } = useAuth();
   const [plans, setPlans] = useState<Plan[]>(defaultPlans);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export function InvestmentPlansSection() {
         icon: '⭐',
         border: 'border-gray-200',
         color: 'from-gray-500 to-gray-700',
-      }
+      },
     }));
   }, [plans]);
 
@@ -62,12 +64,12 @@ export function InvestmentPlansSection() {
           {displayPlans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative bg-white border-2 ${plan.style.border} rounded-2xl p-8 shadow-lg hover:shadow-2xl transition ${
-                plan.style.popular ? 'transform scale-105' : ''
+              className={`relative bg-white border-2 ${plan.style.border} rounded-2xl p-8 shadow-lg hover:shadow-2xl transition flex flex-col justify-between ${
+                plan.style.popular ? 'transform md:scale-105 border-purple-400 shadow-purple-100' : ''
               }`}
             >
               {plan.style.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-1 rounded-full text-sm font-semibold">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-1 rounded-full text-sm font-semibold shadow-md">
                   Most Popular
                 </div>
               )}
@@ -81,12 +83,22 @@ export function InvestmentPlansSection() {
                 <p className="text-gray-500 text-sm">Fixed global pricing</p>
               </div>
 
-              <Link
-                to="/login"
-                className={`block w-full bg-gradient-to-r ${plan.style.color} text-white py-3 rounded-lg font-semibold text-center hover:shadow-lg transition`}
-              >
-                Login to Invest
-              </Link>
+              <div className="space-y-3">
+                <Link
+                  to={user ? '/dashboard/invest' : '/get-started'}
+                  className={`block w-full bg-gradient-to-r ${plan.style.color} text-white py-3 rounded-lg font-semibold text-center hover:shadow-lg transition transform hover:scale-[1.02]`}
+                >
+                  {user ? 'Invest Now' : 'Start with ' + plan.name}
+                </Link>
+                {!user && (
+                  <Link
+                    to="/login"
+                    className="block text-center text-xs text-gray-500 hover:text-purple-600 transition"
+                  >
+                    Already registered? <span className="font-semibold underline">Login</span>
+                  </Link>
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom';
 
 export function HeroSection() {
+  const scrollToPlans = () => {
+    const el = document.getElementById('plans');
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="home" className="relative bg-gradient-to-r from-indigo-900 via-purple-900 to-purple-800 pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -14,16 +22,17 @@ export function HeroSection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             to="/get-started"
-            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-xl transition transform hover:scale-105"
+            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-xl transition transform hover:scale-105 shadow-md"
           >
             Start Investing Today
           </Link>
-          <a
-            href="#plans"
-            className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white/10 transition"
+          <button
+            type="button"
+            onClick={scrollToPlans}
+            className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white/10 transition cursor-pointer"
           >
             View Investment Plans
-          </a>
+          </button>
         </div>
       </div>
     </section>

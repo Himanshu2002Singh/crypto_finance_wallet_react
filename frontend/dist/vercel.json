@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd crypto_finance_wallet_react/frontend && npm install && npm run build",
+  "outputDirectory": "crypto_finance_wallet_react/frontend/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

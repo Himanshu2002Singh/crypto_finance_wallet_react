@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { label: 'Plans', sectionId: 'plans' },
   { label: 'Investor', sectionId: 'investor' },
   { label: 'Blogs', sectionId: 'blogs' },
+  { label: 'FAQs', sectionId: 'faq' },
 ] as const;
 
 /**
@@ -58,6 +59,17 @@ export function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
+
+  // Handle hash scrolling on page load or hash change
+  useEffect(() => {
+    if (location.hash) {
+      const sectionId = location.hash.replace('#', '');
+      const timer = setTimeout(() => {
+        scrollToSection(sectionId);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [location.hash, location.pathname]);
 
   const handleNavClick = useCallback(
     (sectionId: string) => {
