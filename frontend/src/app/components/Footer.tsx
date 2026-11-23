@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Facebook, Twitter, Linkedin, X, Shield, FileText } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, X, Shield, FileText, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const quickLinks = [
   { label: 'Home', sectionId: 'home' },
-  { label: 'Plans', sectionId: 'plans' },
-  { label: 'How It Works', sectionId: 'how-it-works' },
-  { label: 'Investor', sectionId: 'investor' },
-  { label: 'Blogs', sectionId: 'blogs' },
+  { label: 'Why InvestPro', sectionId: 'why-us' },
+  { label: 'Tier Plans', sectionId: 'plans' },
+  { label: 'Investor Profile', sectionId: 'investor' },
+  { label: 'Intelligence Desk', sectionId: 'blogs' },
   { label: 'FAQs', sectionId: 'faq' },
 ];
 
@@ -42,32 +42,38 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-slate-900 text-white pt-16 pb-8">
+    <footer className="bg-slate-950 text-white pt-20 pb-10 border-t border-slate-800/80 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-slate-800/80">
           {/* Brand & Socials */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-xl">
+          <div className="md:col-span-5 space-y-5">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
                 I
               </div>
-              <span className="text-2xl font-bold">InvestPro</span>
-            </div>
+              <div className="flex flex-col">
+                <span className="text-white text-xl font-black tracking-tight flex items-center gap-1">
+                  Invest<span className="text-amber-400">Pro</span>
+                </span>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                  Institutional Wealth & Digital Custody
+                </span>
+              </div>
+            </Link>
 
-            <p className="text-gray-400 mb-6 leading-relaxed">
-              Your trusted partner in cryptocurrency investment. Build wealth with our proven
-              investment strategies and secure platform.
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+              Next-generation digital wealth management engine. Delivering predictable compounding returns through structured tier plans, biometric KYC, and cold vault reserve custody.
             </p>
 
-            <div className="flex gap-4">
+            <div className="flex items-center gap-3">
               <a
                 href="https://www.facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="InvestPro Facebook"
-                className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition text-gray-300 hover:text-white"
+                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="w-4 h-4" />
               </a>
 
               <a
@@ -75,9 +81,9 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="InvestPro Twitter"
-                className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition text-gray-300 hover:text-white"
+                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition"
               >
-                <Twitter className="w-5 h-5" />
+                <Twitter className="w-4 h-4" />
               </a>
 
               <a
@@ -85,23 +91,23 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="InvestPro LinkedIn"
-                className="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition text-gray-300 hover:text-white"
+                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition"
               >
-                <Linkedin className="w-5 h-5" />
+                <Linkedin className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
-            <ul className="space-y-3">
+          <div className="md:col-span-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4">Platform Navigation</h3>
+            <ul className="space-y-2.5 text-xs font-medium">
               {quickLinks.map((item) => (
                 <li key={item.label}>
                   <button
                     type="button"
                     onClick={() => handleLinkClick(item.sectionId)}
-                    className="text-gray-400 hover:text-white transition cursor-pointer text-left"
+                    className="text-slate-400 hover:text-amber-400 transition cursor-pointer text-left"
                   >
                     {item.label}
                   </button>
@@ -111,116 +117,109 @@ export function Footer() {
           </div>
 
           {/* Support & Legal */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">Support & Legal</h3>
-            <ul className="space-y-3">
+          <div className="md:col-span-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4">Custody & Compliance</h3>
+            <ul className="space-y-2.5 text-xs font-medium">
               <li>
                 <button
                   type="button"
                   onClick={() => handleLinkClick('faq')}
-                  className="text-gray-400 hover:text-white transition cursor-pointer text-left"
+                  className="text-slate-400 hover:text-white transition cursor-pointer text-left"
                 >
-                  Help Center & FAQs
+                  Help Desk & FAQs
                 </button>
-              </li>
-              <li>
-                <a
-                  href="mailto:support@investpro.com"
-                  className="text-gray-400 hover:text-white transition text-left"
-                >
-                  Contact Support
-                </a>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => setActiveModal('privacy')}
-                  className="text-gray-400 hover:text-white transition cursor-pointer text-left"
+                  className="text-slate-400 hover:text-white transition cursor-pointer text-left"
                 >
-                  Privacy Policy
+                  Biometric Privacy Policy
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => setActiveModal('terms')}
-                  className="text-gray-400 hover:text-white transition cursor-pointer text-left"
+                  className="text-slate-400 hover:text-white transition cursor-pointer text-left"
                 >
-                  Terms of Service
+                  Institutional Terms of Service
                 </button>
+              </li>
+              <li>
+                <Link
+                  to="/admin/login"
+                  className="text-slate-500 hover:text-amber-400 transition text-left inline-flex items-center gap-1.5 pt-2"
+                >
+                  <Lock className="h-3 w-3" />
+                  <span>Admin & Compliance Console</span>
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Footer */}
-        <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 text-gray-400 text-sm">
-          <p>© 2026 InvestPro. All Rights Reserved.</p>
+        {/* Regulatory Disclaimer & Copyright */}
+        <div className="pt-8 space-y-4 text-xs text-slate-500 leading-relaxed">
           <p>
-            Designed and Developed by{' '}
-            <a
-              href="https://www.trustingbrains.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:text-yellow-400 transition font-medium"
-            >
-              TrustingBrains
-            </a>
+            <strong>Risk Notice:</strong> Digital asset investments and structured cryptocurrency yield products involve market volatility and capital risk. Past returns are illustrative and rate tiers are assigned upon compliance review. Please consult an independent wealth advisor before participating.
           </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-900 text-slate-400">
+            <p>© {new Date().getFullYear()} InvestPro Platform. All Rights Reserved.</p>
+            <p>
+              Engineered with Precision by{' '}
+              <a
+                href="https://www.trustingbrains.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-300 hover:text-amber-400 transition font-bold"
+              >
+                TrustingBrains
+              </a>
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Privacy Policy Modal */}
       {activeModal === 'privacy' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white text-gray-900 rounded-2xl max-w-2xl w-full p-6 md:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+          <div className="bg-white text-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl border border-slate-200">
             <button
               onClick={() => setActiveModal(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
             >
               <X className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
                 <Shield className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-bold">Privacy Policy</h3>
+              <h3 className="text-xl font-black">Biometric & Identity Privacy Policy</h3>
             </div>
-            <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+            <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
               <p>
-                At InvestPro, we respect your privacy and are committed to safeguarding personal and
-                financial data collected through our onboarding, account management, and investment
-                services.
+                At InvestPro, we respect your privacy and are committed to safeguarding personal, biometric, and
+                financial data collected through our onboarding, account management, and investment services.
               </p>
-              <h4 className="font-semibold text-gray-800">1. Information We Collect</h4>
+              <h4 className="font-bold text-slate-900">1. Information We Collect</h4>
               <p>
-                We collect your name, email address, phone number, country of residence, and
-                verification details when you submit an interest registration or complete your
-                investor profile.
+                We collect your full name, email address, phone number, country of residence, government-issued ID proofs
+                (Front and Back), and live biometric facial photographs strictly for KYC compliance.
               </p>
-              <h4 className="font-semibold text-gray-800">2. How We Use Information</h4>
+              <h4 className="font-bold text-slate-900">2. Security and Cold Vault Protection</h4>
               <p>
-                Collected information is used exclusively to facilitate onboarding, verify investor
-                eligibility, provide rate calculations, and maintain regulatory compliance.
-              </p>
-              <h4 className="font-semibold text-gray-800">3. Security and Protection</h4>
-              <p>
-                We implement industry-standard encryption protocols (SSL/TLS), secure token-based
-                authentication, and partitioned storage to ensure user records remain private and
-                protected from unauthorized access.
-              </p>
-              <h4 className="font-semibold text-gray-800">4. Contact Inquiries</h4>
-              <p>
-                If you have questions regarding your data or wish to exercise privacy rights, please
-                reach out directly to our compliance desk at support@investpro.com.
+                We implement 256-bit SSL encryption, tokenized authentication, and isolated Cloudinary storage vaults
+                ensuring all records are guarded against unauthorized digital extraction.
               </p>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setActiveModal(null)}
-                className="bg-purple-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-purple-700 transition"
+                className="bg-slate-900 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition"
               >
-                Close
+                Close Notice
               </button>
             </div>
           </div>
@@ -229,55 +228,37 @@ export function Footer() {
 
       {/* Terms of Service Modal */}
       {activeModal === 'terms' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white text-gray-900 rounded-2xl max-w-2xl w-full p-6 md:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+          <div className="bg-white text-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl border border-slate-200">
             <button
               onClick={() => setActiveModal(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
             >
               <X className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
                 <FileText className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-bold">Terms of Service</h3>
+              <h3 className="text-xl font-black">Institutional Terms of Service</h3>
             </div>
-            <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+            <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
               <p>
-                By accessing or registering with InvestPro, you agree to comply with and be bound by
-                these Terms of Service. Please review them carefully before submitting an interest
-                application.
+                By registering with InvestPro, you agree to comply with platform compliance rules, tier specifications,
+                and digital asset custody policies.
               </p>
-              <h4 className="font-semibold text-gray-800">1. Eligibility and Registration</h4>
+              <h4 className="font-bold text-slate-900">1. Account Activation</h4>
               <p>
-                Users must be of legal age in their jurisdiction. Submission of the registration
-                form represents an application for onboarding subject to verification and approval
-                by platform administrators.
-              </p>
-              <h4 className="font-semibold text-gray-800">2. Investment Plans and Returns</h4>
-              <p>
-                All investment plans, rates, and projected returns are governed by specific tier
-                guidelines and agreed terms. Cryptocurrency investments carry market risk; past
-                performance is not a guarantee of future results.
-              </p>
-              <h4 className="font-semibold text-gray-800">3. Referral Program Rules</h4>
-              <p>
-                Referral bonuses are earned only upon successful qualification and plan activation by
-                invited accounts, following anti-abuse verification.
-              </p>
-              <h4 className="font-semibold text-gray-800">4. Modifications</h4>
-              <p>
-                InvestPro reserves the right to update these terms to reflect regulatory or platform
-                updates. Active users will be notified of material changes.
+                Account approval is granted following document verification by compliance officers. Rate yields are fixed
+                per tier and visible in real time on your dashboard.
               </p>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setActiveModal(null)}
-                className="bg-purple-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-purple-700 transition"
+                className="bg-slate-900 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition"
               >
-                Close
+                Close Notice
               </button>
             </div>
           </div>

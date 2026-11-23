@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, BookOpen, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { X, BookOpen, Calendar, Clock, ArrowRight, Sparkles } from 'lucide-react';
 
 interface Article {
   id: string;
@@ -7,16 +7,18 @@ interface Article {
   excerpt: string;
   date: string;
   readTime: string;
+  tag: string;
   content: string[];
 }
 
 const allBlogArticles: Article[] = [
   {
     id: 'macro-outlook',
-    title: '2026 Crypto Market Outlook',
-    excerpt: 'A forward-looking view on macro drivers shaping digital asset growth.',
+    title: '2026 Crypto Market Outlook: Institutional Yield Horizons',
+    excerpt: 'A forward-looking view on macro liquidity, treasury integrations, and digital asset growth.',
     date: 'May 8, 2026',
     readTime: '4 min read',
+    tag: 'Macro Strategy',
     content: [
       'As we navigate 2026, institutional digital asset adoption has transitioned from speculative momentum to disciplined balance-sheet integration. Global liquidity conditions and regulatory clarity across key financial hubs are providing unprecedented structural support.',
       'Our research committee monitors three primary macro catalysts: sustained ETF inflows, on-chain real-world asset (RWA) tokenization, and sovereign yield differentials that encourage capital allocators to seek crypto yield opportunities.',
@@ -25,10 +27,11 @@ const allBlogArticles: Article[] = [
   },
   {
     id: 'risk-frameworks',
-    title: 'Risk Frameworks for Long-Term Investors',
-    excerpt: 'How we build resilient portfolios across market cycles.',
+    title: 'Risk Frameworks: Capital Preservation Across Volatility',
+    excerpt: 'How tier-based mathematical models protect principal capital through market cycles.',
     date: 'May 2, 2026',
     readTime: '5 min read',
+    tag: 'Risk Management',
     content: [
       'Building enduring wealth in crypto requires an unwavering commitment to risk management. Market volatility is not an obstacle to be avoided, but a variable to be engineered around.',
       'We utilize tier-based allocation formulas, dynamic hedging protocols, and secure institutional custody to shield principal investment capital while generating steady compounding returns.',
@@ -37,10 +40,11 @@ const allBlogArticles: Article[] = [
   },
   {
     id: 'referral-program',
-    title: 'Referral Programs That Reward Community',
-    excerpt: 'Why transparent referral incentives matter for investor trust.',
+    title: 'Transparent Multi-Tier Referral Networks That Compound',
+    excerpt: 'Why verifiable, real-time commission structures empower platform trust.',
     date: 'Apr 25, 2026',
     readTime: '3 min read',
+    tag: 'Ecosystem & Growth',
     content: [
       'Sustainable ecosystems grow when value is distributed transparently back to the community that fosters them. Our referral mechanism is engineered with absolute clarity at its core.',
       'Unlike opaque affiliate models, InvestPro investors can track their referrals, activation stages, and credited commissions in real time straight from their personal dashboard.',
@@ -49,10 +53,11 @@ const allBlogArticles: Article[] = [
   },
   {
     id: 'institutional-custody',
-    title: 'Institutional Custody: Safeguarding Digital Wealth',
-    excerpt: 'An inside look at multi-party computation and cold vault infrastructure.',
+    title: 'Institutional Custody: Safeguarding Client Reserves',
+    excerpt: 'An inside look at multi-party computation (MPC) and cold vault architectures.',
     date: 'Apr 18, 2026',
     readTime: '4 min read',
+    tag: 'Vault Security',
     content: [
       'Security is the bedrock of digital finance. At InvestPro, client reserves are safeguarded with multi-party computation (MPC) private key architectures and geographically dispersed cold storage vaults.',
       'No single administrator or server retains unilateral access to reserve keys. Every treasury movement undergoes multi-signatory verification and algorithmic health monitoring.',
@@ -61,10 +66,11 @@ const allBlogArticles: Article[] = [
   },
   {
     id: 'defi-evolution',
-    title: 'The Evolution of Structured Yield Products',
-    excerpt: 'How automated rebalancing and fixed rate plans deliver predictability.',
+    title: 'Structured Yield Products vs Day-Trading Hazards',
+    excerpt: 'How automated rebalancing and fixed rate plans deliver peace of mind.',
     date: 'Apr 10, 2026',
     readTime: '6 min read',
+    tag: 'Yield Engineering',
     content: [
       'The modern investor seeks predictable yield alongside capital preservation. Structured plans allow individuals to bypass complex day-trading mechanics in favor of pre-determined return profiles.',
       'By pairing liquidity-provision rewards with algorithmic counter-party arbitrage, InvestPro plans unlock steady returns that are shielded from sharp daily market swings.',
@@ -80,104 +86,120 @@ export function BlogSection() {
   const displayedArticles = showAll ? allBlogArticles : allBlogArticles.slice(0, 3);
 
   return (
-    <section id="blogs" className="py-20 bg-gray-50">
+    <section id="blogs" className="py-24 bg-slate-100 text-slate-900 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-purple-700 rounded-2xl p-8 sm:p-12 mb-8 shadow-xl text-white">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center text-2xl backdrop-blur-sm">
-              📰
+        {/* Banner Header */}
+        <div className="relative overflow-hidden rounded-3xl bg-slate-950 p-8 sm:p-12 mb-10 shadow-2xl text-white border border-slate-800">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+          <div className="relative z-10 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>InvestPro Intelligence & Research Desk</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold">Investment Insights & Blog</h2>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-3">
+              Strategic Insights & Wealth Intelligence
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              Curated market reports, risk engineering whitepapers, and digital asset strategies curated by our private research desk.
+            </p>
           </div>
-          <p className="text-purple-100 text-base sm:text-lg max-w-2xl">
-            Expert analysis, market intelligence, and wealth-building strategies curated by our investment research desk.
-          </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-          <div className="space-y-4 mb-8">
-            {displayedArticles.map((article) => (
-              <div
-                key={article.id}
-                onClick={() => setSelectedArticle(article)}
-                className="pb-6 pt-2 border-b border-gray-100 last:border-b-0 hover:bg-purple-50/50 p-4 rounded-xl transition cursor-pointer group"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-purple-700 transition">
-                    {article.title}
-                  </h3>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {article.date}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {article.readTime}
-                    </span>
+        {/* Article Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {displayedArticles.map((article) => (
+            <div
+              key={article.id}
+              onClick={() => setSelectedArticle(article)}
+              className="group relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                    {article.tag}
+                  </span>
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{article.readTime}</span>
                   </div>
                 </div>
-                <p className="text-gray-600 text-sm sm:text-base mb-3 leading-relaxed">
+
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-600 transition-colors mb-2.5 leading-snug">
+                  {article.title}
+                </h3>
+
+                <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed mb-4">
                   {article.excerpt}
                 </p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 group-hover:text-purple-800 transition">
-                  Read Full Article <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-400 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {article.date}
+                </span>
+                <span className="font-bold text-amber-600 group-hover:text-amber-700 flex items-center gap-1 transition">
+                  Read Analysis <ArrowRight className="w-3.5 h-3.5 transition group-hover:translate-x-1" />
                 </span>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
+        {/* View All Button */}
+        <div className="text-center">
           <button
             type="button"
             onClick={() => setShowAll((prev) => !prev)}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3.5 rounded-lg font-semibold hover:shadow-lg transition transform hover:scale-[1.01] cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-300 bg-white text-xs font-black text-slate-800 hover:bg-slate-50 hover:border-slate-400 shadow-sm transition cursor-pointer"
           >
-            {showAll ? 'Show Fewer Articles' : `View All Articles (${allBlogArticles.length})`}
+            <span>{showAll ? 'Show Fewer Articles' : `Explore All Intelligence Articles (${allBlogArticles.length})`}</span>
           </button>
         </div>
       </div>
 
       {/* Article Reader Modal */}
       {selectedArticle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl border border-slate-200">
             <button
               onClick={() => setSelectedArticle(null)}
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition"
+              className="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 text-purple-600 font-semibold text-xs tracking-wider uppercase mb-3">
-              <BookOpen className="w-4 h-4" /> Research & Analysis
+            <div className="flex items-center gap-2 text-amber-700 font-bold text-xs tracking-wider uppercase mb-3">
+              <BookOpen className="w-4 h-4" />
+              <span>{selectedArticle.tag} • Intelligence Whitepaper</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-3 leading-tight">
               {selectedArticle.title}
             </h2>
 
-            <div className="flex items-center gap-4 text-xs text-gray-500 pb-5 mb-5 border-b border-gray-100">
+            <div className="flex items-center gap-4 text-xs text-slate-400 pb-5 mb-5 border-b border-slate-100">
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-gray-400" />
+                <Calendar className="w-4 h-4" />
                 {selectedArticle.date}
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-gray-400" />
+                <Clock className="w-4 h-4" />
                 {selectedArticle.readTime}
               </span>
             </div>
 
-            <div className="space-y-4 text-gray-700 text-base leading-relaxed">
+            <div className="space-y-4 text-slate-700 text-sm sm:text-base leading-relaxed">
               {selectedArticle.content.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
 
-            <div className="mt-8 pt-5 border-t border-gray-100 flex justify-end">
+            <div className="mt-8 pt-5 border-t border-slate-100 flex justify-end">
               <button
                 type="button"
                 onClick={() => setSelectedArticle(null)}
-                className="bg-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-purple-700 transition"
+                className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-800 transition"
               >
                 Close Article
               </button>
