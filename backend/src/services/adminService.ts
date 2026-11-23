@@ -17,6 +17,13 @@ export async function adminLogin(email: string, password: string) {
 }
 
 export async function getAdminDashboard() {
+  let pendingWithdrawals = 0;
+  try {
+    pendingWithdrawals = await prisma.withdrawal.count({ where: { status: "PENDING" } });
+  } catch {
+    // fallback if table being created
+  }
+
   const [totalLeads, pendingLeads, approvedUsers, activeUsers] = await Promise.all([
     prisma.lead.count(),
     prisma.lead.count({ where: { status: "PENDING" } }),
@@ -24,7 +31,7 @@ export async function getAdminDashboard() {
     prisma.user.count({ where: { status: "ACTIVE" } })
   ]);
 
-  return { totalLeads, pendingLeads, approvedUsers, activeUsers };
+  return { totalLeads, pendingLeads, approvedUsers, activeUsers, pendingWithdrawals };
 }
 
 function getReferralCodeFromEmail(email: string) {

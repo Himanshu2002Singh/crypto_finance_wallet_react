@@ -15,6 +15,7 @@ import { AdminLoginPage } from './pages/admin/AdminLoginPage';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminLeadsPage } from './pages/admin/AdminLeadsPage';
+import { AdminWithdrawalsPage } from './pages/admin/AdminWithdrawalsPage';
 import { AdminRoute } from './components/AdminRoute';
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="leads" element={<AdminLeadsPage />} />
+          <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
         </Route>
 
         <Route

@@ -11,7 +11,9 @@ import {
   Shield,
   Activity,
   CheckCircle2,
-  Users
+  Users,
+  Wallet,
+  ArrowDownToLine
 } from 'lucide-react';
 import { adminApi } from '../services/api';
 
@@ -20,20 +22,26 @@ export function AdminLayout() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [pendingWithdrawals, setPendingWithdrawals] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchPendingCount = async () => {
+    const fetchMetrics = async () => {
       try {
         const response = await adminApi.get('/admin/dashboard');
-        if (response.data && typeof response.data.pendingLeads === 'number') {
-          setPendingCount(response.data.pendingLeads);
+        if (response.data) {
+          if (typeof response.data.pendingLeads === 'number') {
+            setPendingCount(response.data.pendingLeads);
+          }
+          if (typeof response.data.pendingWithdrawals === 'number') {
+            setPendingWithdrawals(response.data.pendingWithdrawals);
+          }
         }
       } catch (err) {
         // silently ignore if not authenticated or network error
       }
     };
-    void fetchPendingCount();
-    const interval = setInterval(fetchPendingCount, 15000);
+    void fetchMetrics();
+    const interval = setInterval(fetchMetrics, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -56,6 +64,13 @@ export function AdminLayout() {
       path: '/admin/leads',
       exact: false,
       badge: pendingCount && pendingCount > 0 ? pendingCount : null
+    },
+    {
+      icon: ArrowDownToLine,
+      label: 'Withdrawal Requests',
+      path: '/admin/withdrawals',
+      exact: false,
+      badge: pendingWithdrawals && pendingWithdrawals > 0 ? pendingWithdrawals : null
     }
   ];
 
@@ -74,7 +89,7 @@ export function AdminLayout() {
                 Admin
               </span>
             </div>
-            <div className="text-[11px] font-medium tracking-wide text-slate-400">Control Center & KYC</div>
+            <div className="text-[11px] font-medium tracking-wide text-slate-400">Control Center & Operations</div>
           </div>
         </Link>
         <button
@@ -135,11 +150,11 @@ export function AdminLayout() {
             System Live & Operational
           </div>
           <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-            All services, KYC automated checks, and database connections are synced.
+            KYC auto-verification & crypto withdrawal settlement engine active.
           </p>
           <div className="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2.5 text-[11px] text-slate-400 font-medium">
-            <span>SSL Encryption</span>
-            <span className="text-emerald-400 font-semibold">Active</span>
+            <span>Treasury Outflow</span>
+            <span className="text-emerald-400 font-semibold">Active Gate</span>
           </div>
         </div>
       </div>
@@ -212,11 +227,19 @@ export function AdminLayout() {
                   </span>
                   <span className="text-xs text-slate-400">/</span>
                   <span className="text-xs font-semibold text-slate-600">
-                    {location.pathname.includes('/leads') ? 'Leads & KYC Verification' : 'Dashboard Analytics'}
+                    {location.pathname.includes('/withdrawals')
+                      ? 'Capital Withdrawals'
+                      : location.pathname.includes('/leads')
+                      ? 'Leads & KYC Verification'
+                      : 'Dashboard Analytics'}
                   </span>
                 </div>
                 <h1 className="text-lg font-bold text-slate-900 sm:text-xl">
-                  {location.pathname.includes('/leads') ? 'Investor Applications & Verification' : 'Platform Operations'}
+                  {location.pathname.includes('/withdrawals')
+                    ? 'Crypto Wallet Settlements'
+                    : location.pathname.includes('/leads')
+                    ? 'Investor Applications & Verification'
+                    : 'Platform Operations'}
                 </h1>
               </div>
             </div>
@@ -232,13 +255,13 @@ export function AdminLayout() {
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
 
-              {pendingCount && pendingCount > 0 ? (
+              {pendingWithdrawals && pendingWithdrawals > 0 ? (
                 <Link
-                  to="/admin/leads"
+                  to="/admin/withdrawals"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold px-3 py-1.5 text-xs shadow-sm hover:bg-amber-400 transition"
                 >
                   <Activity className="h-3.5 w-3.5 animate-spin" />
-                  <span>{pendingCount} Pending Review</span>
+                  <span>{pendingWithdrawals} Pending Withdrawals</span>
                 </Link>
               ) : null}
 

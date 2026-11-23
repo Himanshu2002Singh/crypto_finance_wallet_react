@@ -125,6 +125,14 @@ export function AdminDashboardPage() {
               <span>Review KYC Leads</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
+
+            <Link
+              to="/admin/withdrawals"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-white px-5 py-3 text-sm font-bold transition"
+            >
+              <Zap className="h-4 w-4 text-amber-400" />
+              <span>Withdrawal Queue</span>
+            </Link>
           </div>
         </div>
       </div>

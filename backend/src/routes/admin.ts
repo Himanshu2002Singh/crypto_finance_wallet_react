@@ -9,6 +9,11 @@ import {
   adminUpdateLeadRatesController,
   adminRequestReuploadController
 } from "../controllers/adminController.js";
+import {
+  adminListWithdrawalsController,
+  adminApproveWithdrawalController,
+  adminRejectWithdrawalController
+} from "../controllers/withdrawalController.js";
 import { requireAdmin } from "../middlewares/auth.js";
 
 const router = Router();
@@ -21,5 +26,10 @@ router.post("/leads/:id/approve", requireAdmin, adminApproveLeadController);
 router.post("/leads/:id/reject", requireAdmin, adminRejectLeadController);
 router.put("/leads/:id/rates", requireAdmin, adminUpdateLeadRatesController);
 router.post("/leads/:id/request-reupload", requireAdmin, adminRequestReuploadController);
+
+// Withdrawals Management Endpoints
+router.get("/withdrawals", requireAdmin, adminListWithdrawalsController);
+router.post("/withdrawals/:id/approve", requireAdmin, adminApproveWithdrawalController);
+router.post("/withdrawals/:id/reject", requireAdmin, adminRejectWithdrawalController);
 
 export default router;
