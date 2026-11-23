@@ -5,7 +5,9 @@ import {
   adminGetLeadController,
   adminListLeadsController,
   adminLoginController,
-  adminRejectLeadController
+  adminRejectLeadController,
+  adminUpdateLeadRatesController,
+  adminRequestReuploadController
 } from "../controllers/adminController.js";
 import { requireAdmin } from "../middlewares/auth.js";
 
@@ -17,5 +19,7 @@ router.get("/leads", requireAdmin, adminListLeadsController);
 router.get("/leads/:id", requireAdmin, adminGetLeadController);
 router.post("/leads/:id/approve", requireAdmin, adminApproveLeadController);
 router.post("/leads/:id/reject", requireAdmin, adminRejectLeadController);
+router.put("/leads/:id/rates", requireAdmin, adminUpdateLeadRatesController);
+router.post("/leads/:id/request-reupload", requireAdmin, adminRequestReuploadController);
 
 export default router;

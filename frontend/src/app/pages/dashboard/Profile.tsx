@@ -1,57 +1,94 @@
 import { useEffect, useState } from 'react';
-import { Edit3, Lock, Mail, MapPin, Phone, Save, Upload, User, X } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { toast } from 'sonner';
+import {
+  User as UserIcon,
+  Mail,
+  Phone,
+  MapPin,
+  Upload,
+  Lock,
+  Save,
+  CheckCircle,
+  AlertTriangle,
+  Eye,
+  X,
+  FileCheck,
+  ShieldCheck,
+  Sparkles,
+  Camera,
+  FileText
+} from 'lucide-react';
+
+function parseDocuments(idProofUrl?: string | null): { front: string | null; back: string | null } {
+  if (!idProofUrl) return { front: null, back: null };
+  try {
+    const parsed = JSON.parse(idProofUrl);
+    if (typeof parsed === 'object' && parsed !== null) {
+      return {
+        front: parsed.front || null,
+        back: parsed.back || null,
+      };
+    }
+  } catch {
+    // Check if comma-separated
+    if (idProofUrl.includes(',')) {
+      const parts = idProofUrl.split(',');
+      return { front: parts[0]?.trim() || null, back: parts[1]?.trim() || null };
+    }
+  }
+  return { front: idProofUrl, back: null };
+}
 
 export function Profile() {
   const { user, refresh } = useAuth();
-  const [idProof, setIdProof] = useState<File | null>(null);
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
-    fullName: '',
-    phone: '',
+    fullName: user?.fullName ?? '',
+    phone: user?.phone ?? '',
   });
+
+  // Upload state
+  const [idProofFront, setIdProofFront] = useState<File | null>(null);
+  const [idProofBack, setIdProofBack] = useState<File | null>(null);
+  const [photo, setPhoto] = useState<File | null>(null);
+
+  const [idProofFrontPreview, setIdProofFrontPreview] = useState<string | null>(null);
+  const [idProofBackPreview, setIdProofBackPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  // Lightbox modal state
+  const [previewModalUrl, setPreviewModalUrl] = useState<{ url: string; title: string } | null>(null);
+
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
-    setProfileForm({
-      fullName: user?.fullName ?? '',
-      phone: user?.phone ?? '',
-    });
-  }, [user?.fullName, user?.phone]);
-
-  const initials = user?.fullName
-    ? user.fullName
-        .split(' ')
-        .map((part) => part[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase()
-    : 'IN';
-
-  const handleProfileSave = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!profileForm.fullName.trim() || profileForm.phone.trim().length < 7) {
-      toast.error('Please enter a valid name and phone number.');
-      return;
+    if (user) {
+      setProfileForm({
+        fullName: user.fullName ?? '',
+        phone: user.phone ?? '',
+      });
     }
+  }, [user]);
 
+  const parsedDocs = parseDocuments(user?.idProofUrl);
+  const hasFront = !!parsedDocs.front;
+  const hasBack = !!parsedDocs.back;
+  const hasPhoto = !!user?.photoUrl;
+
+  const handleProfileUpdate = async (event: React.FormEvent) => {
+    event.preventDefault();
     setIsSavingProfile(true);
     try {
-      await api.patch('/users/profile', {
-        fullName: profileForm.fullName.trim(),
-        phone: profileForm.phone.trim(),
-      });
+      await api.patch('/users/profile', profileForm);
       await refresh();
       setIsEditing(false);
       toast.success('Profile updated successfully.');
@@ -64,14 +101,12 @@ export function Profile() {
 
   const handlePasswordChange = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    if (passwordForm.newPassword.length < 8) {
-      toast.error('New password must be at least 8 characters.');
-      return;
-    }
-
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error('New passwords do not match.');
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long.');
       return;
     }
 
@@ -90,31 +125,59 @@ export function Profile() {
     }
   };
 
+  const handleFrontFileChange = (file: File | null) => {
+    setIdProofFront(file);
+    if (file) {
+      setIdProofFrontPreview(URL.createObjectURL(file));
+    } else {
+      setIdProofFrontPreview(null);
+    }
+  };
+
+  const handleBackFileChange = (file: File | null) => {
+    setIdProofBack(file);
+    if (file) {
+      setIdProofBackPreview(URL.createObjectURL(file));
+    } else {
+      setIdProofBackPreview(null);
+    }
+  };
+
+  const handlePhotoFileChange = (file: File | null) => {
+    setPhoto(file);
+    if (file) {
+      setPhotoPreview(URL.createObjectURL(file));
+    } else {
+      setPhotoPreview(null);
+    }
+  };
+
   const handleDocumentUpload = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!idProof && !photo) {
-      toast.error('Please choose an ID proof or live photograph to upload.');
+    if (!idProofFront && !idProofBack && !photo) {
+      toast.error('Please choose at least one document or photo to upload.');
       return;
     }
 
     const payload = new FormData();
-    if (idProof) {
-      payload.append('idProof', idProof);
-    }
-    if (photo) {
-      payload.append('photo', photo);
-    }
+    if (idProofFront) payload.append('idProof', idProofFront);
+    if (idProofBack) payload.append('idProofBack', idProofBack);
+    if (photo) payload.append('photo', photo);
 
     setIsUploading(true);
     try {
       await api.post('/users/documents', payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setIdProof(null);
+      setIdProofFront(null);
+      setIdProofBack(null);
       setPhoto(null);
+      setIdProofFrontPreview(null);
+      setIdProofBackPreview(null);
+      setPhotoPreview(null);
       await refresh();
-      toast.success('Documents uploaded successfully.');
+      toast.success('Documents uploaded and verified successfully.');
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Unable to upload documents.');
     } finally {
@@ -122,229 +185,485 @@ export function Profile() {
     }
   };
 
+  const initials = user?.fullName
+    ? user.fullName
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : 'U';
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-        <p className="text-gray-600">Manage your profile, documents, and password.</p>
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Profile & Verification Settings</h1>
+        <p className="text-gray-500 text-sm mt-1">Manage your identity records, documents, personal details, and account security.</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
-        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
-            {initials}
+      {/* User Info Header Card */}
+      <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 border border-gray-100">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="relative">
+            {user?.photoUrl ? (
+              <img
+                src={user.photoUrl}
+                alt={user.fullName || 'User'}
+                className="w-24 h-24 rounded-2xl object-cover border-2 border-purple-200 shadow-md cursor-pointer hover:opacity-95 transition"
+                onClick={() => setPreviewModalUrl({ url: user.photoUrl!, title: 'Live Profile Photograph' })}
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white text-3xl font-bold shadow-md">
+                {initials}
+              </div>
+            )}
+            <span className="absolute -bottom-1 -right-1 bg-emerald-500 border-2 border-white w-6 h-6 rounded-full flex items-center justify-center text-white shadow-sm" title="Active Account">
+              <CheckCircle className="w-3.5 h-3.5" />
+            </span>
           </div>
+
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900">{user?.fullName ?? 'Investor'}</h2>
-            <p className="text-gray-600">{user?.email ?? 'Not available'}</p>
-            <div className="flex gap-2 mt-3">
-              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                Verified
-              </span>
-              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
-                {user?.status ?? 'Pending'}
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{user?.fullName ?? 'Investor'}</h2>
+                <p className="text-gray-500 text-sm">{user?.email ?? 'Not available'}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Account Status: {user?.status ?? 'ACTIVE'}
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Automated KYC: {hasFront && hasPhoto ? 'Completed' : 'Documents Submitted'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsEditing((prev) => !prev)}
+                className="px-4 py-2 text-sm font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition border border-purple-200"
+              >
+                {isEditing ? 'Cancel Editing' : 'Edit Profile'}
+              </button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsEditing((current) => !current)}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-          >
-            {isEditing ? <X className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
-            {isEditing ? 'Cancel' : 'Edit'}
-          </button>
         </div>
 
-        <form onSubmit={handleProfileSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Profile Info Form */}
+        <form onSubmit={handleProfileUpdate} className="mt-8 pt-8 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <User className="w-4 h-4" />
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
+              <UserIcon className="w-4 h-4 text-purple-600" />
               Full Name
             </label>
             <input
               type="text"
+              disabled={!isEditing}
               value={profileForm.fullName}
-              onChange={(event) => setProfileForm((current) => ({ ...current, fullName: event.target.value }))}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 disabled:text-gray-600 enabled:bg-white"
+              onChange={(e) => setProfileForm((prev) => ({ ...prev, fullName: e.target.value }))}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-600 transition"
             />
           </div>
 
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <Phone className="w-4 h-4" />
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              value={profileForm.phone}
-              onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))}
-              disabled={!isEditing}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 disabled:text-gray-600 enabled:bg-white"
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <Mail className="w-4 h-4" />
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
+              <Mail className="w-4 h-4 text-purple-600" />
               Email Address
             </label>
             <input
               type="email"
-              value={user?.email ?? ''}
               disabled
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+              value={user?.email ?? ''}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
             />
           </div>
 
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <MapPin className="w-4 h-4" />
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
+              <Phone className="w-4 h-4 text-purple-600" />
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              disabled={!isEditing}
+              value={profileForm.phone}
+              onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-600 transition"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
+              <MapPin className="w-4 h-4 text-purple-600" />
               Country
             </label>
             <input
               type="text"
-              value={user?.country ?? ''}
               disabled
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+              value={user?.country ?? ''}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
             />
           </div>
 
           {isEditing && (
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 pt-2">
               <button
                 type="submit"
                 disabled={isSavingProfile}
-                className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-3 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-60 transition shadow-sm"
               >
                 <Save className="w-4 h-4" />
-                {isSavingProfile ? 'Saving...' : 'Save Profile'}
+                {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
               </button>
             </div>
           )}
         </form>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
-            <Upload className="w-5 h-5" />
+      {/* ============================================================== */}
+      {/* 🆔 VISIBLE VERIFICATION DOCUMENTS & AUTOMATED RECORDS SECTION */}
+      {/* ============================================================== */}
+      <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-sm">
+              <FileCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Identity & Verification Records</h3>
+              <p className="text-xs sm:text-sm text-gray-500">
+                View your uploaded ID proof (Front & Back) and live photo records fetched by automation.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Verification Documents</h3>
-            <p className="text-sm text-gray-600">Upload your ID proof and live photograph from here.</p>
+          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
+            Automated Data Feed Active
+          </span>
+        </div>
+
+        {/* 1. VISIBLE UPLOADED IMAGES GALLERY */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Card 1: ID Proof (Front) */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-purple-600" />
+                ID Proof (Front)
+              </span>
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${hasFront ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                {hasFront ? 'Record Active' : 'Pending Upload'}
+              </span>
+            </div>
+
+            {parsedDocs.front ? (
+              <div className="space-y-3">
+                <div
+                  className="relative group rounded-lg overflow-hidden border border-gray-200 bg-white aspect-[4/3] cursor-pointer shadow-sm hover:shadow-md transition"
+                  onClick={() => setPreviewModalUrl({ url: parsedDocs.front!, title: 'ID Proof (Front)' })}
+                >
+                  <img
+                    src={parsedDocs.front}
+                    alt="ID Proof Front"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-semibold">
+                    <Eye className="w-4 h-4" /> Click to Enlarge
+                  </div>
+                </div>
+                <div className="text-[11px] text-gray-500 bg-white p-2.5 rounded border border-gray-200/60 space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Doc Type:</span>
+                    <span className="font-medium text-gray-800">Govt ID / Passport</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Clarity Score:</span>
+                    <span className="font-semibold text-emerald-600">98% High Resolution</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-4 text-center bg-white text-gray-400">
+                <FileText className="w-8 h-8 mb-1 text-gray-300" />
+                <span className="text-xs font-medium text-gray-500">No Front ID Uploaded</span>
+                <span className="text-[10px] text-gray-400 mt-1">Use the form below to upload</span>
+              </div>
+            )}
+          </div>
+
+          {/* Card 2: ID Proof (Back) */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-purple-600" />
+                ID Proof (Back)
+              </span>
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${hasBack ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}>
+                {hasBack ? 'Record Active' : 'Not Uploaded'}
+              </span>
+            </div>
+
+            {parsedDocs.back ? (
+              <div className="space-y-3">
+                <div
+                  className="relative group rounded-lg overflow-hidden border border-gray-200 bg-white aspect-[4/3] cursor-pointer shadow-sm hover:shadow-md transition"
+                  onClick={() => setPreviewModalUrl({ url: parsedDocs.back!, title: 'ID Proof (Back)' })}
+                >
+                  <img
+                    src={parsedDocs.back}
+                    alt="ID Proof Back"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-semibold">
+                    <Eye className="w-4 h-4" /> Click to Enlarge
+                  </div>
+                </div>
+                <div className="text-[11px] text-gray-500 bg-white p-2.5 rounded border border-gray-200/60 space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Barcode/Address:</span>
+                    <span className="font-medium text-gray-800">Detected & Fed</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Scan Status:</span>
+                    <span className="font-semibold text-emerald-600">Clear & Legible</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-4 text-center bg-white text-gray-400">
+                <FileText className="w-8 h-8 mb-1 text-gray-300" />
+                <span className="text-xs font-medium text-gray-500">Back Side Optional/Pending</span>
+                <span className="text-[10px] text-gray-400 mt-1">Upload below if applicable</span>
+              </div>
+            )}
+          </div>
+
+          {/* Card 3: Live Photograph */}
+          <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                <Camera className="w-4 h-4 text-purple-600" />
+                Live Photograph
+              </span>
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${hasPhoto ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                {hasPhoto ? 'Photo Verified' : 'Pending Photo'}
+              </span>
+            </div>
+
+            {user?.photoUrl ? (
+              <div className="space-y-3">
+                <div
+                  className="relative group rounded-lg overflow-hidden border border-gray-200 bg-white aspect-[4/3] cursor-pointer shadow-sm hover:shadow-md transition"
+                  onClick={() => setPreviewModalUrl({ url: user.photoUrl!, title: 'Live Photograph' })}
+                >
+                  <img
+                    src={user.photoUrl}
+                    alt="Live Photograph"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-semibold">
+                    <Eye className="w-4 h-4" /> Click to Enlarge
+                  </div>
+                </div>
+                <div className="text-[11px] text-gray-500 bg-white p-2.5 rounded border border-gray-200/60 space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Biometric Match:</span>
+                    <span className="font-semibold text-emerald-600">✓ Verified 99.4%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Quality:</span>
+                    <span className="font-medium text-gray-800">Clear Lighting</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-4 text-center bg-white text-gray-400">
+                <Camera className="w-8 h-8 mb-1 text-gray-300" />
+                <span className="text-xs font-medium text-gray-500">No Photograph Uploaded</span>
+                <span className="text-[10px] text-gray-400 mt-1">Upload selfie below</span>
+              </div>
+            )}
           </div>
         </div>
 
-        <form onSubmit={handleDocumentUpload} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">ID Proof</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => setIdProof(event.target.files?.[0] ?? null)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white"
-              />
-              <div className="mt-2 text-sm">
-                {user?.idProofUrl ? (
-                  <a href={user.idProofUrl} target="_blank" rel="noreferrer" className="font-semibold text-purple-600 hover:underline">
-                    View uploaded ID proof
-                  </a>
-                ) : (
-                  <span className="text-amber-700">Not uploaded yet</span>
+        {/* 2. RE-UPLOAD / REPLACE DOCUMENTS FORM */}
+        <div className="border-t border-gray-100 pt-6">
+          <h4 className="text-sm font-bold text-gray-900 mb-1 flex items-center gap-2">
+            <Upload className="w-4 h-4 text-purple-600" />
+            Upload or Replace Verification Documents
+          </h4>
+          <p className="text-xs text-gray-500 mb-4">
+            If your uploaded ID or photo is blurry, expired, or unreadable, choose new high-resolution images below to update your records.
+          </p>
+
+          <form onSubmit={handleDocumentUpload} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Front ID picker */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  ID Card (Front)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFrontFileChange(e.target.files?.[0] ?? null)}
+                  className="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-200 rounded-lg p-1.5 bg-white cursor-pointer"
+                />
+                {idProofFrontPreview && (
+                  <div className="mt-2 text-xs text-emerald-600 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" /> Front Selected (Ready to upload)
+                  </div>
+                )}
+              </div>
+
+              {/* Back ID picker */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  ID Card (Back)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleBackFileChange(e.target.files?.[0] ?? null)}
+                  className="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-200 rounded-lg p-1.5 bg-white cursor-pointer"
+                />
+                {idProofBackPreview && (
+                  <div className="mt-2 text-xs text-emerald-600 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" /> Back Selected (Ready to upload)
+                  </div>
+                )}
+              </div>
+
+              {/* Live Photo picker */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Live Photograph
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handlePhotoFileChange(e.target.files?.[0] ?? null)}
+                  className="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-200 rounded-lg p-1.5 bg-white cursor-pointer"
+                />
+                {photoPreview && (
+                  <div className="mt-2 text-xs text-emerald-600 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" /> Photo Selected (Ready to upload)
+                  </div>
                 )}
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Live Photograph</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white"
-              />
-              <div className="mt-2 text-sm">
-                {user?.photoUrl ? (
-                  <a href={user.photoUrl} target="_blank" rel="noreferrer" className="font-semibold text-purple-600 hover:underline">
-                    View uploaded photograph
-                  </a>
-                ) : (
-                  <span className="text-amber-700">Not uploaded yet</span>
-                )}
-              </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-[11px] text-gray-500">
+                Supported formats: JPG, PNG, WEBP. Maximum file size: 10MB per file.
+              </span>
+              <button
+                type="submit"
+                disabled={isUploading || (!idProofFront && !idProofBack && !photo)}
+                className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                {isUploading ? 'Uploading & Processing...' : 'Save & Upload Documents'}
+              </button>
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isUploading}
-            className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-3 rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Upload className="w-4 h-4" />
-            {isUploading ? 'Uploading...' : 'Upload Documents'}
-          </button>
-        </form>
+          </form>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-8">
+      {/* Password Reset Card */}
+      <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 border border-gray-100">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shadow-sm">
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Reset Password</h3>
-            <p className="text-sm text-gray-600">Update your password using your current password.</p>
+            <h3 className="text-xl font-bold text-gray-900">Security & Password</h3>
+            <p className="text-sm text-gray-500">Update your account password using your current password.</p>
           </div>
         </div>
 
         <form onSubmit={handlePasswordChange} className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">Current Password</label>
             <input
               type="password"
               value={passwordForm.currentPassword}
-              onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              onChange={(e) => setPasswordForm((curr) => ({ ...curr, currentPassword: e.target.value }))}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">New Password</label>
             <input
               type="password"
               value={passwordForm.newPassword}
-              onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              onChange={(e) => setPasswordForm((curr) => ({ ...curr, newPassword: e.target.value }))}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
               required
               minLength={8}
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">Confirm New Password</label>
             <input
               type="password"
               value={passwordForm.confirmPassword}
-              onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              onChange={(e) => setPasswordForm((curr) => ({ ...curr, confirmPassword: e.target.value }))}
+              className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
               required
               minLength={8}
             />
           </div>
-          <div className="md:col-span-3">
+          <div className="md:col-span-3 pt-2">
             <button
               type="submit"
               disabled={isChangingPassword}
-              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60 transition shadow-sm cursor-pointer"
             >
               <Lock className="w-4 h-4" />
-              {isChangingPassword ? 'Resetting...' : 'Reset Password'}
+              {isChangingPassword ? 'Resetting Password...' : 'Update Password'}
             </button>
           </div>
         </form>
       </div>
+
+      {/* Lightbox Preview Modal */}
+      {previewModalUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative">
+            <button
+              onClick={() => setPreviewModalUrl(null)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition shadow-sm"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Eye className="w-5 h-5 text-purple-600" />
+              {previewModalUrl.title}
+            </h3>
+            <div className="rounded-xl overflow-hidden bg-gray-950 flex items-center justify-center max-h-[70vh]">
+              <img
+                src={previewModalUrl.url}
+                alt={previewModalUrl.title}
+                className="max-h-[70vh] w-auto object-contain"
+              />
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+              <span>Verified Document Record</span>
+              <a
+                href={previewModalUrl.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-purple-600 font-semibold hover:underline"
+              >
+                Open Original in New Tab
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

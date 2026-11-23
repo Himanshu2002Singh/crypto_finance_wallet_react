@@ -9,6 +9,8 @@ export async function createLead(data: {
   password: string;
   message?: string;
   referralCode?: string;
+  idProofUrl?: string;
+  photoUrl?: string;
 }) {
   const passwordHash = await bcrypt.hash(data.password, 10);
   const { password, ...leadData } = data;
@@ -26,6 +28,8 @@ export async function createLead(data: {
       country: true,
       message: true,
       referralCode: true,
+      idProofUrl: true,
+      photoUrl: true,
       status: true,
       createdAt: true
     }

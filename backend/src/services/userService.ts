@@ -87,23 +87,60 @@ export async function choosePlan(userId: string, planId: string) {
   });
 }
 
+async function processFile(file: Express.Multer.File, folder: string): Promise<string> {
+  try {
+    return await uploadImage(file, folder);
+  } catch (err) {
+    console.warn("Cloudinary upload fallback to base64 for file:", file.originalname, err);
+    return `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+  }
+}
+
 export async function uploadUserDocuments(input: {
   userId: string;
   idProofFile?: Express.Multer.File;
+  idProofBackFile?: Express.Multer.File;
   photoFile?: Express.Multer.File;
 }) {
-  if (!input.idProofFile && !input.photoFile) {
+  if (!input.idProofFile && !input.idProofBackFile && !input.photoFile) {
     throw new Error("Please upload an ID proof or photograph");
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { idProofUrl: true, photoUrl: true }
+  });
+
+  let existingFront: string | null = null;
+  let existingBack: string | null = null;
+  if (existingUser?.idProofUrl) {
+    try {
+      const parsed = JSON.parse(existingUser.idProofUrl);
+      existingFront = parsed.front || null;
+      existingBack = parsed.back || null;
+    } catch {
+      existingFront = existingUser.idProofUrl;
+    }
   }
 
   const data: { idProofUrl?: string; photoUrl?: string } = {};
 
+  let frontUrl = existingFront;
+  let backUrl = existingBack;
+
   if (input.idProofFile) {
-    data.idProofUrl = await uploadImage(input.idProofFile, "invest-pro/id-proofs");
+    frontUrl = await processFile(input.idProofFile, "invest-pro/id-proofs");
+  }
+  if (input.idProofBackFile) {
+    backUrl = await processFile(input.idProofBackFile, "invest-pro/id-proofs");
+  }
+
+  if (frontUrl || backUrl) {
+    data.idProofUrl = JSON.stringify({ front: frontUrl || null, back: backUrl || null });
   }
 
   if (input.photoFile) {
-    data.photoUrl = await uploadImage(input.photoFile, "invest-pro/photos");
+    data.photoUrl = await processFile(input.photoFile, "invest-pro/photos");
   }
 
   return prisma.user.update({

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { adminLogin, approveLead, getAdminDashboard, rejectLead } from "../services/adminService.js";
+import { adminLogin, approveLead, getAdminDashboard, rejectLead, updateLeadRates, requestReupload } from "../services/adminService.js";
 import { signAdminToken } from "../utils/jwt.js";
 import { listLeads, getLeadById } from "../services/leadService.js";
 
@@ -74,4 +74,24 @@ export async function adminRejectLeadController(req: Request, res: Response) {
   const adminId = req.adminId as string;
   await rejectLead({ leadId: req.params.id, adminId });
   return res.json({ success: true });
+}
+
+export async function adminUpdateLeadRatesController(req: Request, res: Response) {
+  const payload = approveSchema.parse(req.body);
+  const updatedLead = await updateLeadRates({
+    leadId: req.params.id,
+    bronzeReturnRate: payload.bronzeReturnRate,
+    silverReturnRate: payload.silverReturnRate,
+    goldReturnRate: payload.goldReturnRate,
+    bronzeReferralRate: payload.bronzeReferralRate,
+    silverReferralRate: payload.silverReferralRate,
+    goldReferralRate: payload.goldReferralRate
+  });
+  return res.json({ lead: updatedLead, message: "Plan rates updated successfully." });
+}
+
+export async function adminRequestReuploadController(req: Request, res: Response) {
+  const reason = req.body?.reason as string | undefined;
+  const lead = await requestReupload({ leadId: req.params.id, reason });
+  return res.json({ lead, message: "Re-upload notification requested successfully." });
 }

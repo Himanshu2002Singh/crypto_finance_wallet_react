@@ -41,6 +41,7 @@ export async function uploadDocumentsController(req: Request, res: Response) {
   const user = await uploadUserDocuments({
     userId,
     idProofFile: files?.idProof?.[0],
+    idProofBackFile: files?.idProofBack?.[0],
     photoFile: files?.photo?.[0]
   });
 

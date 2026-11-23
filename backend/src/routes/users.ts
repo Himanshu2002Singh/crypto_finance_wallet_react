@@ -20,6 +20,7 @@ router.post(
   requireUser,
   upload.fields([
     { name: "idProof", maxCount: 1 },
+    { name: "idProofBack", maxCount: 1 },
     { name: "photo", maxCount: 1 }
   ]),
   uploadDocumentsController

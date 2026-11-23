@@ -157,3 +157,69 @@ export async function rejectLead(input: { leadId: string; adminId: string }) {
     }
   });
 }
+
+export async function updateLeadRates(input: {
+  leadId: string;
+  bronzeReturnRate: number;
+  silverReturnRate: number;
+  goldReturnRate: number;
+  bronzeReferralRate: number;
+  silverReferralRate: number;
+  goldReferralRate: number;
+}) {
+  const lead = await prisma.lead.findUnique({
+    where: { id: input.leadId },
+    include: { user: true }
+  });
+
+  if (!lead) {
+    throw new Error("Lead not found");
+  }
+
+  const updatedLead = await prisma.lead.update({
+    where: { id: input.leadId },
+    data: {
+      assignedBronzeReturn: input.bronzeReturnRate,
+      assignedSilverReturn: input.silverReturnRate,
+      assignedGoldReturn: input.goldReturnRate,
+      assignedReferralRate: input.bronzeReferralRate,
+      assignedBronzeReferral: input.bronzeReferralRate,
+      assignedSilverReferral: input.silverReferralRate,
+      assignedGoldReferral: input.goldReferralRate,
+    }
+  });
+
+  if (lead.user) {
+    await prisma.user.update({
+      where: { id: lead.user.id },
+      data: {
+        bronzeReturnRate: input.bronzeReturnRate,
+        silverReturnRate: input.silverReturnRate,
+        goldReturnRate: input.goldReturnRate,
+        referralRate: input.bronzeReferralRate,
+        bronzeReferralRate: input.bronzeReferralRate,
+        silverReferralRate: input.silverReferralRate,
+        goldReferralRate: input.goldReferralRate,
+      }
+    });
+  }
+
+  return updatedLead;
+}
+
+export async function requestReupload(input: { leadId: string; reason?: string }) {
+  const lead = await prisma.lead.findUnique({ where: { id: input.leadId } });
+  if (!lead) {
+    throw new Error("Lead not found");
+  }
+
+  const note = input.reason || "Image is not clear. Please re-upload clear ID proof and photograph.";
+  const updatedMessage = lead.message ? `${lead.message} | [NOTICE: ${note}]` : `[NOTICE: ${note}]`;
+
+  return prisma.lead.update({
+    where: { id: input.leadId },
+    data: {
+      message: updatedMessage
+    }
+  });
+}

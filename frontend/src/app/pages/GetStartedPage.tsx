@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, Eye, EyeOff, X } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, UploadCloud, X, Camera, FileText } from 'lucide-react';
 import { api } from '../services/api';
 import { toast } from 'sonner';
 import { COUNTRIES } from '../../data/countries';
@@ -17,6 +17,15 @@ export function GetStartedPage() {
     message: '',
     referralCode: '',
   });
+
+  const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
+  const [idBackFile, setIdBackFile] = useState<File | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+
+  const [idFrontPreview, setIdFrontPreview] = useState<string | null>(null);
+  const [idBackPreview, setIdBackPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -32,6 +41,41 @@ export function GetStartedPage() {
       }));
     }
   }, [searchParams]);
+
+  const handleFileChange = (type: 'front' | 'back' | 'photo', file: File | null) => {
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size exceeds 10MB limit.');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+
+    if (type === 'front') {
+      setIdFrontFile(file);
+      setIdFrontPreview(previewUrl);
+    } else if (type === 'back') {
+      setIdBackFile(file);
+      setIdBackPreview(previewUrl);
+    } else if (type === 'photo') {
+      setPhotoFile(file);
+      setPhotoPreview(previewUrl);
+    }
+  };
+
+  const removeFile = (type: 'front' | 'back' | 'photo') => {
+    if (type === 'front') {
+      setIdFrontFile(null);
+      setIdFrontPreview(null);
+    } else if (type === 'back') {
+      setIdBackFile(null);
+      setIdBackPreview(null);
+    } else if (type === 'photo') {
+      setPhotoFile(null);
+      setPhotoPreview(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,17 +97,25 @@ export function GetStartedPage() {
 
     setIsSubmitting(true);
     try {
-      await api.post('/leads', {
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        country: formData.country,
-        password: formData.password,
-        message: formData.message,
-        referralCode: formData.referralCode || undefined,
+      const data = new FormData();
+      data.append('fullName', formData.fullName);
+      data.append('email', formData.email);
+      data.append('phone', formData.phone);
+      data.append('country', formData.country);
+      data.append('password', formData.password);
+      if (formData.message) data.append('message', formData.message);
+      if (formData.referralCode) data.append('referralCode', formData.referralCode);
+
+      if (idFrontFile) data.append('idProof', idFrontFile);
+      if (idBackFile) data.append('idProofBack', idBackFile);
+      if (photoFile) data.append('photo', photoFile);
+
+      await api.post('/leads', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
+
       setSubmitted(true);
-      toast.success('Your request has been submitted. We will notify you after approval.');
+      toast.success('Your account request and documents have been submitted.');
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Unable to submit your request.';
       setError(message);
@@ -97,10 +149,9 @@ export function GetStartedPage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Thank You!</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Registration Received!</h2>
           <p className="text-gray-600 mb-8 leading-relaxed">
-            We've received your interest form. Once admin approves your profile, your account will
-            be active and you can log in with the password you just set.
+            Your profile and identity documents have been submitted for automated compliance verification. Once approved, you can log in with your password.
           </p>
           <Link
             to="/"
@@ -114,7 +165,7 @@ export function GetStartedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-purple-800 flex items-center justify-center p-3 sm:p-5 relative">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-purple-800 flex items-center justify-center p-3 sm:p-5 relative py-10">
       <div className="relative bg-white rounded-2xl p-6 sm:p-8 md:p-9 max-w-3xl w-full shadow-2xl border border-white/20">
         {/* Cross (X) icon to go back to Home */}
         <Link
@@ -127,7 +178,7 @@ export function GetStartedPage() {
         </Link>
 
         {/* Compact Header */}
-        <div className="text-center mb-5 sm:mb-6">
+        <div className="text-center mb-5">
           <Link to="/" className="inline-flex items-center gap-2 mb-2 group">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg shadow group-hover:scale-105 transition-transform">
               I
@@ -138,11 +189,11 @@ export function GetStartedPage() {
             Start Your Investment Journey
           </h1>
           <p className="text-gray-500 text-xs sm:text-sm mt-1">
-            Complete the form below to register. Your password will be active once approved.
+            Complete the form and attach your verification documents below.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 text-red-700 border border-red-200 px-4 py-2.5 rounded-lg text-sm">
               {error}
@@ -275,6 +326,117 @@ export function GetStartedPage() {
             </div>
           </div>
 
+          {/* Verification Documents Upload Section (ID Front, Back, Live Photo) */}
+          <div className="border border-purple-100 bg-purple-50/40 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-purple-600" />
+                Identity & Photo Verification Documents
+              </span>
+              <span className="text-[11px] text-purple-700 font-semibold bg-purple-100 px-2 py-0.5 rounded-full">
+                Auto-Verification
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* ID Front */}
+              <div className="bg-white border border-gray-200 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                <span className="text-[11px] font-semibold text-gray-700 block mb-1">
+                  1. ID Card (Front)
+                </span>
+                {idFrontPreview ? (
+                  <div className="relative group rounded overflow-hidden h-20 bg-gray-100 border">
+                    <img src={idFrontPreview} alt="ID Front" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile('front')}
+                      className="absolute top-1 right-1 bg-red-600 text-white p-0.5 rounded-full shadow hover:bg-red-700 transition"
+                      title="Remove"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 hover:border-purple-400 rounded-md p-2 h-20 cursor-pointer bg-gray-50/50 hover:bg-purple-50/30 transition">
+                    <UploadCloud className="w-5 h-5 text-gray-400 mb-0.5" />
+                    <span className="text-[10px] text-gray-500 font-medium">Front Side</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileChange('front', e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* ID Back */}
+              <div className="bg-white border border-gray-200 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                <span className="text-[11px] font-semibold text-gray-700 block mb-1">
+                  2. ID Card (Back)
+                </span>
+                {idBackPreview ? (
+                  <div className="relative group rounded overflow-hidden h-20 bg-gray-100 border">
+                    <img src={idBackPreview} alt="ID Back" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile('back')}
+                      className="absolute top-1 right-1 bg-red-600 text-white p-0.5 rounded-full shadow hover:bg-red-700 transition"
+                      title="Remove"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 hover:border-purple-400 rounded-md p-2 h-20 cursor-pointer bg-gray-50/50 hover:bg-purple-50/30 transition">
+                    <UploadCloud className="w-5 h-5 text-gray-400 mb-0.5" />
+                    <span className="text-[10px] text-gray-500 font-medium">Back Side</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileChange('back', e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Live Photo */}
+              <div className="bg-white border border-gray-200 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                <span className="text-[11px] font-semibold text-gray-700 block mb-1">
+                  3. Live Photograph
+                </span>
+                {photoPreview ? (
+                  <div className="relative group rounded overflow-hidden h-20 bg-gray-100 border">
+                    <img src={photoPreview} alt="Live Photo" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile('photo')}
+                      className="absolute top-1 right-1 bg-red-600 text-white p-0.5 rounded-full shadow hover:bg-red-700 transition"
+                      title="Remove"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 hover:border-purple-400 rounded-md p-2 h-20 cursor-pointer bg-gray-50/50 hover:bg-purple-50/30 transition">
+                    <Camera className="w-5 h-5 text-gray-400 mb-0.5" />
+                    <span className="text-[10px] text-gray-500 font-medium">Selfie / Photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileChange('photo', e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-500 text-center">
+              Please ensure photos are clear, glare-free, and all 4 corners of your ID are visible.
+            </p>
+          </div>
+
           {/* Pair 4: Referral Code & Message */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
@@ -310,9 +472,9 @@ export function GetStartedPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg font-semibold text-base hover:shadow-xl transition transform hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed mt-2 shadow-md"
+            className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg font-semibold text-base hover:shadow-xl transition transform hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed mt-2 shadow-md cursor-pointer"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Interest Form'}
+            {isSubmitting ? 'Submitting Application & Documents...' : 'Submit Application & Documents'}
           </button>
 
           <p className="text-center text-xs sm:text-sm text-gray-500 pt-1">
