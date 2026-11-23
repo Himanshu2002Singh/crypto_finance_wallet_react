@@ -24,3 +24,4 @@ export async function ensureDatabaseTables() {
     // Silently proceed if table already managed by Prisma migrations
   }
 }
+

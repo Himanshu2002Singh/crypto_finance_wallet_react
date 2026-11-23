@@ -27,8 +27,9 @@ router.post("/leads/:id/reject", requireAdmin, adminRejectLeadController);
 router.put("/leads/:id/rates", requireAdmin, adminUpdateLeadRatesController);
 router.post("/leads/:id/request-reupload", requireAdmin, adminRequestReuploadController);
 
-// Withdrawals Management Endpoints
+// Withdrawals Management Endpoints (Supports both with and without trailing slash)
 router.get("/withdrawals", requireAdmin, adminListWithdrawalsController);
+router.get("/withdrawals/", requireAdmin, adminListWithdrawalsController);
 router.post("/withdrawals/:id/approve", requireAdmin, adminApproveWithdrawalController);
 router.post("/withdrawals/:id/reject", requireAdmin, adminRejectWithdrawalController);
 

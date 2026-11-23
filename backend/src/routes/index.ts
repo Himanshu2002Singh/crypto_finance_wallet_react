@@ -5,6 +5,12 @@ import authRoutes from "./auth.js";
 import userRoutes from "./users.js";
 import planRoutes from "./plans.js";
 import referralRoutes from "./referrals.js";
+import {
+  adminListWithdrawalsController,
+  adminApproveWithdrawalController,
+  adminRejectWithdrawalController
+} from "../controllers/withdrawalController.js";
+import { requireAdmin } from "../middlewares/auth.js";
 
 const router = Router();
 
@@ -14,5 +20,10 @@ router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/plans", planRoutes);
 router.use("/referrals", referralRoutes);
+
+// Alias route: /api/withdrawals (points to admin withdrawal console)
+router.get("/withdrawals", requireAdmin, adminListWithdrawalsController);
+router.post("/withdrawals/:id/approve", requireAdmin, adminApproveWithdrawalController);
+router.post("/withdrawals/:id/reject", requireAdmin, adminRejectWithdrawalController);
 
 export default router;
