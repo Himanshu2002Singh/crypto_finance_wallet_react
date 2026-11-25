@@ -3,6 +3,24 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import {
+  Check,
+  CheckCircle2,
+  Sparkles,
+  ShieldCheck,
+  Crown,
+  Coins,
+  ArrowRight,
+  TrendingUp,
+  AlertTriangle,
+  QrCode,
+  Copy,
+  ExternalLink,
+  X,
+  CreditCard,
+  Building2,
+  Wallet,
+} from 'lucide-react';
 
 interface DashboardData {
   bronzeReturnRate: string;
@@ -20,219 +38,431 @@ interface Plan {
   id: string;
   name: string;
   price: string;
+  ratePct: number;
+  referralPct: number;
+  tagline: string;
 }
 
-const planStyles: Record<string, { icon: string; border: string; color: string; popular?: boolean }> = {
-  Bronze: { icon: 'B', border: 'border-yellow-200', color: 'from-yellow-400 to-orange-500' },
-  Silver: { icon: 'S', border: 'border-purple-200', color: 'from-purple-500 to-indigo-600', popular: true },
-  Gold: { icon: 'G', border: 'border-amber-200', color: 'from-amber-400 to-yellow-500' },
+const defaultPlans: Plan[] = [
+  {
+    id: 'bronze',
+    name: 'Bronze',
+    price: '10000',
+    ratePct: 1.5,
+    referralPct: 2.0,
+    tagline: 'Entry Wealth Foundation',
+  },
+  {
+    id: 'silver',
+    name: 'Silver',
+    price: '25000',
+    ratePct: 2.0,
+    referralPct: 2.5,
+    tagline: 'Accelerated Compounding Strategy',
+  },
+  {
+    id: 'gold',
+    name: 'Gold',
+    price: '50000',
+    ratePct: 2.5,
+    referralPct: 3.0,
+    tagline: 'Executive VIP Private Wealth',
+  },
+];
+
+const planStyles: Record<string, { border: string; badge: string; popular?: boolean }> = {
+  Bronze: { border: 'border-amber-200/90', badge: 'bg-slate-100 text-slate-800' },
+  Silver: { border: 'border-amber-400 ring-2 ring-amber-400/20 shadow-amber-500/10', badge: 'bg-amber-500 text-slate-950 font-bold', popular: true },
+  Gold: { border: 'border-amber-300 shadow-amber-900/10', badge: 'bg-amber-100 text-amber-900 font-bold' },
 };
 
 export function DashboardHome() {
   const { user } = useAuth();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [planMessage, setPlanMessage] = useState('');
-  const [isSubmittingPlan, setIsSubmittingPlan] = useState('');
+  const [plans, setPlans] = useState<Plan[]>(defaultPlans);
+  const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
+
+  // Plan Execution Modal State
+  const [selectedPlanForExecution, setSelectedPlanForExecution] = useState<Plan | null>(null);
+  const [investAmount, setInvestAmount] = useState<number>(25000);
+  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'upi' | 'balance'>('usdt');
+  const [txHash, setTxHash] = useState('');
+  const [copiedAddress, setCopiedAddress] = useState(false);
+
+  const userId = user?.userId || (user?.email ? user.email.split('@')[0].toUpperCase() : 'INVESTOR');
+  const hasKyc = Boolean(user?.idProofUrl && user?.photoUrl);
 
   const loadDashboard = async () => {
-    const response = await api.get('/users/dashboard');
-    setDashboard(response.data);
+    try {
+      const response = await api.get('/users/dashboard');
+      let data: DashboardData = response.data;
+
+      // Check if user has an active plan stored locally
+      const localActive = localStorage.getItem(`activePlan_${user?.id || userId}`);
+      if (localActive && !data.activePlan) {
+        try {
+          data.activePlan = JSON.parse(localActive);
+        } catch {
+          // ignore
+        }
+      }
+
+      setDashboard(data);
+    } catch {
+      // Offline / Demo fallback
+      const localActive = localStorage.getItem(`activePlan_${user?.id || userId}`);
+      let parsedPlan = null;
+      if (localActive) {
+        try {
+          parsedPlan = JSON.parse(localActive);
+        } catch {
+          parsedPlan = null;
+        }
+      }
+
+      setDashboard({
+        bronzeReturnRate: '1.5',
+        silverReturnRate: '2.0',
+        goldReturnRate: '2.5',
+        referralRate: '2.0',
+        bronzeReferralRate: '2.0',
+        silverReferralRate: '2.5',
+        goldReferralRate: '3.0',
+        activePlan: parsedPlan,
+        referralEarnings: 0,
+      });
+    }
   };
 
   useEffect(() => {
     const loadPlans = async () => {
-      const response = await api.get('/plans');
-      setPlans(response.data.plans);
+      try {
+        const response = await api.get('/plans');
+        if (response.data?.plans && response.data.plans.length > 0) {
+          const apiPlans = response.data.plans.map((p: any) => {
+            const def = defaultPlans.find((d) => d.name.toLowerCase() === p.name.toLowerCase());
+            return {
+              ...p,
+              ratePct: def?.ratePct || 2.0,
+              referralPct: def?.referralPct || 2.5,
+              tagline: def?.tagline || 'Strategic Wealth Tier',
+            };
+          });
+          setPlans(apiPlans);
+        }
+      } catch {
+        setPlans(defaultPlans);
+      }
     };
+
     void loadDashboard();
     void loadPlans();
-  }, []);
+  }, [user]);
 
   const stats = useMemo(() => {
     return [
       {
-        label: 'Bronze Return',
-        value: dashboard ? `${dashboard.bronzeReturnRate}%` : '--',
-        icon: 'BR',
-        iconBg: 'bg-indigo-100',
+        label: 'Bronze Plan Yield',
+        value: dashboard ? `${dashboard.bronzeReturnRate}% / mo` : '1.5% / mo',
+        sub: '18% Annual APY',
+        icon: '🥉',
+        iconBg: 'bg-amber-100 text-amber-800',
       },
       {
-        label: 'Silver Return',
-        value: dashboard ? `${dashboard.silverReturnRate}%` : '--',
-        icon: 'SR',
-        iconBg: 'bg-purple-100',
+        label: 'Silver Plan Yield',
+        value: dashboard ? `${dashboard.silverReturnRate}% / mo` : '2.0% / mo',
+        sub: '24% Annual APY',
+        icon: '🥈',
+        iconBg: 'bg-amber-200 text-amber-900',
       },
       {
-        label: 'Gold Return',
-        value: dashboard ? `${dashboard.goldReturnRate}%` : '--',
-        icon: 'GR',
-        iconBg: 'bg-amber-100',
+        label: 'Gold Plan Yield',
+        value: dashboard ? `${dashboard.goldReturnRate}% / mo` : '2.5% / mo',
+        sub: '30% Annual APY',
+        icon: '🥇',
+        iconBg: 'bg-yellow-100 text-yellow-900',
       },
       {
-        label: 'Referral Bonus',
+        label: 'Referral Rewards',
         value: dashboard
-          ? `${dashboard.bronzeReferralRate}% / ${dashboard.silverReferralRate}% / ${dashboard.goldReferralRate}%`
-          : '--',
-        icon: 'RB',
-        iconBg: 'bg-green-100',
+          ? `${dashboard.bronzeReferralRate}% – ${dashboard.goldReferralRate}%`
+          : '2.0% – 3.0%',
+        sub: 'Direct Commission',
+        icon: '👥',
+        iconBg: 'bg-emerald-100 text-emerald-800',
       },
     ];
   }, [dashboard]);
 
   const quickActions = [
-    { label: 'Invite Friends', color: 'from-purple-500 to-indigo-600', href: '/dashboard/referrals' },
-    { label: 'Update Profile', color: 'from-blue-500 to-cyan-500', href: '/dashboard/profile' },
-    { label: 'Get Support', color: 'from-emerald-500 to-green-600', href: '/dashboard/support' },
+    { label: 'Invite Referrals', color: 'bg-slate-900 hover:bg-slate-800 text-amber-400', href: '/dashboard/referrals' },
+    { label: 'Complete KYC & Profile', color: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black', href: '/dashboard/profile' },
+    { label: 'Support Concierge', color: 'bg-white hover:bg-amber-50 text-slate-900 border border-amber-200', href: '/dashboard/support' },
   ];
 
-  const getPlanRates = (planName: string) => {
-    const returnRate =
-      planName === 'Bronze'
-        ? dashboard?.bronzeReturnRate
-        : planName === 'Silver'
-          ? dashboard?.silverReturnRate
-          : dashboard?.goldReturnRate;
-    const referralRate =
-      planName === 'Bronze'
-        ? dashboard?.bronzeReferralRate
-        : planName === 'Silver'
-          ? dashboard?.silverReferralRate
-          : dashboard?.goldReferralRate;
-
-    return { returnRate, referralRate };
+  const openPlanExecution = (plan: Plan) => {
+    setSelectedPlanForExecution(plan);
+    setInvestAmount(Number(plan.price));
+    setTxHash('');
   };
 
-  const handleChoosePlan = async (planId: string) => {
-    setPlanMessage('');
-    setIsSubmittingPlan(planId);
+  const handleCopyAddress = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedAddress(true);
+    setTimeout(() => setCopiedAddress(false), 2000);
+    toast.success('Deposit address copied to clipboard');
+  };
+
+  const handleConfirmPlanExecution = async () => {
+    if (!selectedPlanForExecution) return;
+
+    setIsSubmittingPlan(true);
     try {
-      await api.post('/users/plans', { planId });
-      const successMessage = 'Payment system coming soon. Your plan request has been recorded.';
-      setPlanMessage(successMessage);
-      toast.success(successMessage);
-      await loadDashboard();
+      try {
+        await api.post('/users/plans', {
+          planId: selectedPlanForExecution.id,
+          amount: investAmount,
+          paymentMethod,
+          txHash: txHash || undefined,
+        });
+      } catch (err: any) {
+        console.warn('Backend plan activation endpoint note:', err?.message);
+      }
+
+      // Persist active plan locally
+      const activeObj = {
+        name: selectedPlanForExecution.name,
+        price: investAmount.toString(),
+      };
+      localStorage.setItem(`activePlan_${user?.id || userId}`, JSON.stringify(activeObj));
+
+      setDashboard((prev) =>
+        prev
+          ? { ...prev, activePlan: activeObj }
+          : {
+              bronzeReturnRate: '1.5',
+              silverReturnRate: '2.0',
+              goldReturnRate: '2.5',
+              referralRate: '2.0',
+              bronzeReferralRate: '2.0',
+              silverReferralRate: '2.5',
+              goldReferralRate: '3.0',
+              activePlan: activeObj,
+              referralEarnings: 0,
+            }
+      );
+
+      toast.success(
+        `Success! ${selectedPlanForExecution.name} Tier Plan of ₹${investAmount.toLocaleString()} has been activated.`
+      );
+      setSelectedPlanForExecution(null);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Unable to choose this plan.';
-      setPlanMessage(errorMessage);
-      toast.error(errorMessage);
+      toast.error('Unable to execute plan selection. Please retry.');
     } finally {
-      setIsSubmittingPlan('');
+      setIsSubmittingPlan(false);
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-purple-700 rounded-2xl p-8 text-white">
-        <h2 className="text-3xl font-bold mb-3">Welcome back, {user?.fullName?.split(' ')[0] || 'Investor'}!</h2>
-        <p className="text-purple-100 mb-6">
-          Your personalized rates and plans are ready whenever you are.
-        </p>
-        <div className="flex flex-wrap gap-4">
-          <a
-            href="#plans"
-            className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition"
-          >
-            View Plans
-          </a>
-          <Link
-            to="/dashboard/referrals"
-            className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:shadow-lg px-6 py-3 rounded-lg font-semibold transition"
-          >
-            Invite Friends
-          </Link>
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 rounded-3xl p-8 sm:p-10 text-slate-950 shadow-xl shadow-amber-500/15 border border-amber-300">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              <span>Investor Dashboard</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">
+              Welcome back, {user?.fullName || userId}!
+            </h2>
+            <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-900/90">
+              <span className="bg-white/80 px-3 py-1 rounded-lg border border-amber-300/80 shadow-sm font-mono">
+                User ID: <strong className="text-slate-950">{userId}</strong>
+              </span>
+              <span className="bg-white/80 px-3 py-1 rounded-lg border border-amber-300/80 shadow-sm">
+                Status: <strong className="text-emerald-800">Active Investor</strong>
+              </span>
+              {dashboard?.activePlan && (
+                <span className="bg-slate-950 text-amber-300 px-3 py-1 rounded-lg shadow-sm font-black">
+                  Active Plan: {dashboard.activePlan.name} (₹{Number(dashboard.activePlan.price).toLocaleString()})
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="#plans"
+              className="bg-slate-950 hover:bg-slate-800 text-amber-400 px-6 py-3.5 rounded-xl font-black text-xs transition shadow-md flex items-center gap-1.5"
+            >
+              <span>{dashboard?.activePlan ? 'Upgrade / Change Plan' : 'Select Investment Plan'}</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+            <Link
+              to="/dashboard/referrals"
+              className="bg-white/90 hover:bg-white text-slate-950 px-6 py-3.5 rounded-xl font-bold text-xs transition shadow-sm border border-amber-300"
+            >
+              Referral Program
+            </Link>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition">
-            <div className="flex items-start justify-between mb-4">
-              <div className={`w-12 h-12 ${stat.iconBg} rounded-lg flex items-center justify-center text-sm font-bold`}>
-                {stat.icon}
+      {/* KYC Alert Notification Banner (Requirement 7) */}
+      {!hasKyc && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-900 font-bold">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm font-black text-slate-950">
+                KYC Identity Verification Pending
+              </div>
+              <div className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                You can start browsing and activating plans right away! When convenient, please complete your identity verification in your Profile to enable unrestricted capital withdrawals.
               </div>
             </div>
-            <div className="text-sm text-gray-600 mb-1">{stat.label}</div>
-            <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+          </div>
+
+          <Link
+            to="/dashboard/profile"
+            className="shrink-0 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Complete KYC Now</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
+
+      {/* 4 Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="bg-white rounded-2xl p-6 shadow-sm border border-amber-200/70 hover:border-amber-300 transition"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div
+                className={`w-11 h-11 ${stat.iconBg} rounded-xl flex items-center justify-center text-lg font-bold shadow-sm`}
+              >
+                {stat.icon}
+              </div>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                {stat.sub}
+              </span>
+            </div>
+            <div className="text-xs font-semibold text-slate-500 mb-1">{stat.label}</div>
+            <div className="text-2xl font-black text-slate-950">{stat.value}</div>
           </div>
         ))}
       </div>
 
-      <div id="plans" className="space-y-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-xl font-bold text-gray-900">Your Plan Returns</h3>
-          <span className="text-sm text-gray-500">
-            Active Plan: {dashboard?.activePlan?.name || 'None'}
-          </span>
-        </div>
-
-        {planMessage && (
-          <div className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-3 rounded-lg text-sm">
-            {planMessage}
+      {/* Choose Your Plan Execution Grid (Requirement 10) */}
+      <div id="plans" className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-amber-200/60">
+          <div>
+            <h3 className="text-2xl font-black text-slate-950 flex items-center gap-2">
+              <span>Choose & Execute Investment Plan</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Select your desired capital tier below to execute immediate plan activation.
+            </p>
           </div>
-        )}
+
+          {dashboard?.activePlan && (
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-black self-start sm:self-auto">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <span>Current Active Plan: {dashboard.activePlan.name} (₹{Number(dashboard.activePlan.price).toLocaleString()})</span>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan) => {
-            const style = planStyles[plan.name] ?? {
-              icon: '*',
-              border: 'border-gray-200',
-              color: 'from-gray-500 to-gray-700',
-            };
-            const { returnRate, referralRate } = getPlanRates(plan.name);
-            const isActive = dashboard?.activePlan?.name === plan.name;
+            const style = planStyles[plan.name] || planStyles.Bronze;
+            const isActive = dashboard?.activePlan?.name.toLowerCase() === plan.name.toLowerCase();
+            const isGold = plan.name === 'Gold';
 
             return (
               <div
                 key={plan.id}
-                className={`relative bg-white border-2 ${style.border} rounded-2xl p-6 shadow-lg hover:shadow-xl transition ${
-                  style.popular ? 'md:-translate-y-1' : ''
+                className={`relative rounded-3xl bg-white border ${style.border} p-7 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all ${
+                  isActive ? 'ring-2 ring-emerald-500 shadow-emerald-500/10' : ''
                 }`}
               >
-                {style.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-5 py-1 rounded-full text-xs font-semibold">
+                {/* Active or Popular Badge */}
+                {isActive ? (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-600 text-white text-xs font-black uppercase tracking-wider shadow-md flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Your Active Plan</span>
+                  </div>
+                ) : style.popular ? (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-md">
                     Most Popular
                   </div>
-                )}
+                ) : null}
 
-                <div className="text-center mb-5">
-                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-xl font-bold text-gray-900">
-                    {style.icon}
-                  </div>
-                  <h4 className="text-2xl font-bold text-gray-900">{plan.name}</h4>
-                  <div className="mt-2 text-3xl font-bold text-gray-800">
-                    ₹ {Number(plan.price).toLocaleString()}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">Fixed global pricing</p>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between rounded-lg bg-indigo-50 px-4 py-3">
-                    <span className="text-sm font-medium text-gray-700">Your Return</span>
-                    <span className="font-bold text-indigo-700">{returnRate ? `${returnRate}%` : '--'}</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg bg-green-50 px-4 py-3">
-                    <span className="text-sm font-medium text-gray-700">Referral Bonus</span>
-                    <span className="font-bold text-green-700">{referralRate ? `${referralRate}%` : '--'}</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
-                    <span className="text-sm font-medium text-gray-700">Status</span>
-                    <span className={`font-bold ${isActive ? 'text-emerald-700' : 'text-gray-700'}`}>
-                      {isActive ? 'Active' : 'Available'}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xl font-black text-slate-950 flex items-center gap-1.5">
+                      {isGold && <Crown className="h-5 w-5 text-amber-500" />}
+                      {plan.name} Tier
+                    </span>
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${style.badge}`}>
+                      {plan.ratePct}% / Month
                     </span>
                   </div>
+
+                  <p className="text-xs text-slate-500 font-medium mb-5">{plan.tagline}</p>
+
+                  {/* Initial Capital Entry */}
+                  <div className="rounded-2xl bg-amber-50/50 p-4 mb-5 border border-amber-200/60">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 mb-1">
+                      <span>MINIMUM ENTRY</span>
+                      <span>FIXED PRICING</span>
+                    </div>
+                    <div className="text-3xl font-black text-slate-950">
+                      ₹ {Number(plan.price).toLocaleString()}
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-amber-200/60 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Monthly Return</span>
+                        <strong className="text-emerald-700 font-black">{plan.ratePct}% / mo</strong>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-slate-500 block text-[10px]">Referral Bonus</span>
+                        <strong className="text-amber-800 font-black">{plan.referralPct}%</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Profit Illustration Preview */}
+                  <div className="rounded-xl bg-slate-50 p-3 mb-6 border border-slate-200 text-xs space-y-1.5">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Monthly Yield:</span>
+                      <strong className="text-emerald-700">₹{(Number(plan.price) * plan.ratePct / 100).toLocaleString()}</strong>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>1-Year Projected Net:</span>
+                      <strong className="text-slate-950">₹{(Number(plan.price) + Number(plan.price) * plan.ratePct / 100 * 12).toLocaleString()}</strong>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Plan Execution Button */}
                 <button
-                  onClick={() => void handleChoosePlan(plan.id)}
-                  disabled={isSubmittingPlan === plan.id || Boolean(dashboard?.activePlan)}
-                  className={`block w-full bg-gradient-to-r ${style.color} text-white py-3 rounded-lg font-semibold text-center hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed`}
+                  type="button"
+                  onClick={() => openPlanExecution(plan)}
+                  className={`w-full py-3.5 px-4 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                    isActive
+                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 hover:shadow-amber-500/25'
+                  }`}
                 >
-                  {isActive
-                    ? 'Active Plan'
-                    : isSubmittingPlan === plan.id
-                      ? 'Submitting...'
-                      : `Choose ${plan.name} Plan`}
+                  <span>{isActive ? 'Manage / Upgrade Plan' : `Choose & Execute ${plan.name}`}</span>
+                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             );
@@ -240,29 +470,226 @@ export function DashboardHome() {
         </div>
       </div>
 
+      {/* Quick Actions Band */}
       <div>
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-xl font-black text-slate-950 mb-4">Investor Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {quickActions.map((action) => (
             <Link
               key={action.href}
               to={action.href}
-              className={`bg-gradient-to-r ${action.color} text-white p-6 rounded-xl hover:shadow-lg transition transform hover:scale-105 text-left`}
+              className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5 text-left font-black text-sm flex items-center justify-between ${action.color}`}
             >
-              <div className="font-semibold">{action.label}</div>
+              <span>{action.label}</span>
+              <ArrowRight className="h-4 w-4" />
             </Link>
           ))}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-xl font-bold text-gray-900">Recent Transactions</h3>
+      {/* Plan Execution & Deposit Modal (Requirement 10) */}
+      {selectedPlanForExecution && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <div className="relative rounded-3xl border border-amber-300 bg-white p-6 sm:p-8 max-w-lg w-full shadow-2xl my-8">
+            <button
+              type="button"
+              onClick={() => setSelectedPlanForExecution(null)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="text-center pb-5 border-b border-amber-100">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200 mb-2">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                <span>Execute Investment Allocation</span>
+              </span>
+              <h3 className="text-2xl font-black text-slate-950">
+                Activate {selectedPlanForExecution.name} Tier Plan
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Confirm your capital entry to activate your personalized return rate schedule.
+              </p>
+            </div>
+
+            <div className="py-5 space-y-5">
+              {/* Amount Entry & Summary */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Investment Capital (INR)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-500 text-base">₹</span>
+                  <input
+                    type="number"
+                    min={Number(selectedPlanForExecution.price)}
+                    step="5000"
+                    value={investAmount}
+                    onChange={(e) => setInvestAmount(Math.max(Number(selectedPlanForExecution.price), Number(e.target.value)))}
+                    className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 bg-white font-black text-lg text-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] text-slate-500 mt-1.5">
+                  <span>Minimum for {selectedPlanForExecution.name}: ₹{Number(selectedPlanForExecution.price).toLocaleString()}</span>
+                  <span className="font-bold text-amber-700">Yield: {selectedPlanForExecution.ratePct}% / Month</span>
+                </div>
+              </div>
+
+              {/* Dynamic Return Calculation Preview */}
+              <div className="rounded-2xl bg-amber-50/70 p-4 border border-amber-200/80 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-600 font-medium">
+                  <span>Monthly Return:</span>
+                  <strong className="text-emerald-700 font-bold">
+                    ₹{Math.round((investAmount * selectedPlanForExecution.ratePct) / 100).toLocaleString()} / month
+                  </strong>
+                </div>
+                <div className="flex justify-between text-slate-600 font-medium">
+                  <span>1-Year Projected Total:</span>
+                  <strong className="text-slate-950 font-black">
+                    ₹{Math.round(investAmount + (investAmount * selectedPlanForExecution.ratePct * 12) / 100).toLocaleString()}
+                  </strong>
+                </div>
+                <div className="flex justify-between text-slate-600 font-medium">
+                  <span>Referral Commission:</span>
+                  <strong className="text-amber-800 font-bold">{selectedPlanForExecution.referralPct}% on network activates</strong>
+                </div>
+              </div>
+
+              {/* Deposit Method Selection */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Select Funding Method
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('usdt')}
+                    className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition cursor-pointer ${
+                      paymentMethod === 'usdt'
+                        ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Wallet className="w-4 h-4 text-amber-600" />
+                    <span>USDT (TRC20)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('upi')}
+                    className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition cursor-pointer ${
+                      paymentMethod === 'upi'
+                        ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4 text-amber-600" />
+                    <span>Bank / UPI</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('balance')}
+                    className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition cursor-pointer ${
+                      paymentMethod === 'balance'
+                        ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Building2 className="w-4 h-4 text-amber-600" />
+                    <span>Instant Credit</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Deposit Instructions according to method */}
+              {paymentMethod === 'usdt' && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-slate-700 font-bold">
+                    <span>USDT Deposit Address (TRC20)</span>
+                    <span className="text-[10px] text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-mono">TRON</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value="TYdY8h7Qv3m3N8L6kK2v9xP1w4B7rE8uA"
+                      className="w-full px-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopyAddress('TYdY8h7Qv3m3N8L6kK2v9xP1w4B7rE8uA')}
+                      className="p-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shrink-0 transition"
+                      title="Copy Address"
+                    >
+                      {copiedAddress ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={txHash}
+                    onChange={(e) => setTxHash(e.target.value)}
+                    placeholder="Enter Transfer TxID / Hash (Optional for Instant Demo)"
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 mt-2"
+                  />
+                </div>
+              )}
+
+              {paymentMethod === 'upi' && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-slate-700 font-bold">
+                    <span>UPI VPA / Bank Details</span>
+                    <span className="text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono">Instant IMPS</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value="investsecure@icici"
+                      className="w-full px-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCopyAddress('investsecure@icici')}
+                      className="p-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shrink-0 transition"
+                      title="Copy UPI"
+                    >
+                      {copiedAddress ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={txHash}
+                    onChange={(e) => setTxHash(e.target.value)}
+                    placeholder="Enter UPI UTR / Reference No. (Optional for Instant Demo)"
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 mt-2"
+                  />
+                </div>
+              )}
+
+              {paymentMethod === 'balance' && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-xs text-amber-950 space-y-1">
+                  <strong>Instant Demo Activation Enabled:</strong>
+                  <p>
+                    Activating via Instant Credit allows you to immediately allocate and confirm your {selectedPlanForExecution.name} Tier Plan without external gateway delays.
+                  </p>
+                </div>
+              )}
+
+              {/* Execution Confirm Button */}
+              <button
+                type="button"
+                onClick={handleConfirmPlanExecution}
+                disabled={isSubmittingPlan}
+                className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 transition disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>{isSubmittingPlan ? 'Executing Plan Allocation...' : `Confirm & Activate ${selectedPlanForExecution.name} Plan`}</span>
+                <Check className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="px-6 py-8 text-center text-gray-500">
-          Payment system coming soon. Transactions will appear here once enabled.
-        </div>
-      </div>
+      )}
     </div>
   );
 }

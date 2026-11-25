@@ -229,13 +229,16 @@ export function Profile() {
                 <h2 className="text-2xl font-bold text-gray-900">{user?.fullName ?? 'Investor'}</h2>
                 <p className="text-gray-500 text-sm">{user?.email ?? 'Not available'}</p>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 font-mono">
+                    User ID: {user?.userId || (user?.email ? user.email.split('@')[0].toUpperCase() : 'INVESTOR')}
+                  </span>
                   <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     Account Status: {user?.status ?? 'ACTIVE'}
                   </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 flex items-center gap-1.5">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${hasFront && hasPhoto ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900 border border-amber-200'}`}>
                     <Sparkles className="w-3.5 h-3.5" />
-                    Automated KYC: {hasFront && hasPhoto ? 'Completed' : 'Documents Submitted'}
+                    KYC Status: {hasFront && hasPhoto ? 'Verified' : 'Pending Verification (Upload Below)'}
                   </span>
                 </div>
               </div>

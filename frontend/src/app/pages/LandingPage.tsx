@@ -11,7 +11,7 @@ import { Footer } from '../components/Footer';
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white text-slate-900">
       <Navbar />
       <HeroSection />
       <WhyChooseSection />

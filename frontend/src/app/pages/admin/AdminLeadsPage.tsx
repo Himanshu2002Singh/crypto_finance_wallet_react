@@ -127,12 +127,12 @@ export function AdminLeadsPage() {
       const initialRates: Record<string, ApprovalRates> = {};
       loadedLeads.forEach((lead) => {
         initialRates[lead.id] = {
-          bronzeReturnRate: lead.assignedBronzeReturn?.toString() || '5.0',
-          silverReturnRate: lead.assignedSilverReturn?.toString() || '8.5',
-          goldReturnRate: lead.assignedGoldReturn?.toString() || '12.0',
+          bronzeReturnRate: lead.assignedBronzeReturn?.toString() || '1.5',
+          silverReturnRate: lead.assignedSilverReturn?.toString() || '2.0',
+          goldReturnRate: lead.assignedGoldReturn?.toString() || '2.5',
           bronzeReferralRate: (lead.assignedBronzeReferral ?? lead.assignedReferralRate)?.toString() || '2.0',
-          silverReferralRate: lead.assignedSilverReferral?.toString() || '3.5',
-          goldReferralRate: lead.assignedGoldReferral?.toString() || '5.0',
+          silverReferralRate: lead.assignedSilverReferral?.toString() || '2.5',
+          goldReferralRate: lead.assignedGoldReferral?.toString() || '3.0',
         };
       });
       setRates(initialRates);
@@ -164,12 +164,12 @@ export function AdminLeadsPage() {
       ...prev,
       [leadId]: {
         ...(prev[leadId] || {
-          bronzeReturnRate: '5.0',
-          silverReturnRate: '8.5',
-          goldReturnRate: '12.0',
+          bronzeReturnRate: '1.5',
+          silverReturnRate: '2.0',
+          goldReturnRate: '2.5',
           bronzeReferralRate: '2.0',
-          silverReferralRate: '3.5',
-          goldReferralRate: '5.0'
+          silverReferralRate: '2.5',
+          goldReferralRate: '3.0'
         }),
         [field]: value,
       },
@@ -180,30 +180,30 @@ export function AdminLeadsPage() {
     let preset: ApprovalRates;
     if (tierLevel === 'standard') {
       preset = {
-        bronzeReturnRate: '5.0',
-        silverReturnRate: '8.5',
-        goldReturnRate: '12.0',
+        bronzeReturnRate: '1.5',
+        silverReturnRate: '2.0',
+        goldReturnRate: '2.5',
         bronzeReferralRate: '2.0',
-        silverReferralRate: '3.5',
-        goldReferralRate: '5.0'
+        silverReferralRate: '2.5',
+        goldReferralRate: '3.0'
       };
     } else if (tierLevel === 'high') {
       preset = {
-        bronzeReturnRate: '7.5',
-        silverReturnRate: '12.0',
-        goldReturnRate: '18.0',
-        bronzeReferralRate: '3.0',
-        silverReferralRate: '5.0',
-        goldReferralRate: '8.0'
+        bronzeReturnRate: '2.0',
+        silverReturnRate: '2.5',
+        goldReturnRate: '3.0',
+        bronzeReferralRate: '2.5',
+        silverReferralRate: '3.0',
+        goldReferralRate: '3.5'
       };
     } else {
       preset = {
-        bronzeReturnRate: '3.5',
-        silverReturnRate: '6.0',
-        goldReturnRate: '9.0',
+        bronzeReturnRate: '1.2',
+        silverReturnRate: '1.8',
+        goldReturnRate: '2.2',
         bronzeReferralRate: '1.5',
-        silverReferralRate: '2.5',
-        goldReferralRate: '4.0'
+        silverReferralRate: '2.0',
+        goldReferralRate: '2.5'
       };
     }
 

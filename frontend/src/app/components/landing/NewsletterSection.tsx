@@ -65,21 +65,21 @@ export function NewsletterSection() {
   };
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-gradient-to-b from-white via-amber-50/20 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-600 rounded-2xl p-8 sm:p-12 mb-8 shadow-xl text-white">
+        <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 rounded-3xl p-8 sm:p-12 mb-8 shadow-xl shadow-amber-500/20 text-slate-950 border border-amber-300">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center text-2xl backdrop-blur-sm">
+            <div className="w-12 h-12 bg-white/40 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm shadow-sm">
               📨
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold">InvestPro Intelligence Briefing</h2>
+            <h2 className="text-2xl sm:text-3xl font-black">InvestPro Intelligence Briefing</h2>
           </div>
-          <p className="text-blue-50 text-base sm:text-lg max-w-2xl">
+          <p className="text-slate-900/90 text-base sm:text-lg max-w-2xl font-medium">
             Weekly market updates, exclusive alpha, and strategic investment insights delivered straight to your inbox.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+        <div className="bg-white rounded-3xl shadow-xl shadow-amber-900/5 p-6 sm:p-8 border border-amber-200/80">
           <div className="space-y-4 mb-8">
             {newsletters.map((newsletter) => {
               const isSelected = selectedNewsletters.includes(newsletter.id);
@@ -87,30 +87,30 @@ export function NewsletterSection() {
                 <div
                   key={newsletter.id}
                   onClick={() => toggleNewsletter(newsletter.id)}
-                  className={`flex items-start justify-between p-4 sm:p-5 rounded-xl border transition-all cursor-pointer ${
+                  className={`flex items-start justify-between p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-teal-400 bg-teal-50/30'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
+                      ? 'border-amber-400 bg-amber-50/50 shadow-sm'
+                      : 'border-slate-200 bg-white hover:border-amber-300'
                   }`}
                 >
                   <div className="flex items-start gap-3.5">
                     <div
-                      className={`w-5 h-5 rounded mt-0.5 flex items-center justify-center border transition ${
+                      className={`w-5 h-5 rounded-md mt-0.5 flex items-center justify-center border transition ${
                         isSelected
-                          ? 'bg-teal-600 border-teal-600 text-white'
-                          : 'border-gray-300 bg-white'
+                          ? 'bg-amber-500 border-amber-500 text-slate-950'
+                          : 'border-slate-300 bg-white'
                       }`}
                     >
-                      {isSelected && <Check className="w-3.5 h-3.5" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                     </div>
                     <div>
-                      <h3 className={`text-base sm:text-lg font-bold ${newsletter.color} mb-1`}>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-950 mb-1">
                         {newsletter.title}
                       </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">{newsletter.description}</p>
+                      <p className="text-slate-600 text-sm leading-relaxed">{newsletter.description}</p>
                     </div>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ml-4 ${newsletter.badge}`}>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap ml-4 bg-amber-100 text-amber-800 border border-amber-200">
                     {newsletter.subscribers}
                   </span>
                 </div>

@@ -37,8 +37,8 @@ export function Referrals() {
   }, [referrals]);
 
   const referralCode = useMemo(() => {
-    return user?.email?.split('@')[0]?.trim() || '';
-  }, [user?.email]);
+    return user?.userId || (user?.email ? user.email.split('@')[0].trim().toUpperCase() : '');
+  }, [user?.userId, user?.email]);
 
   const referralLink = useMemo(() => {
     if (!referralCode) {

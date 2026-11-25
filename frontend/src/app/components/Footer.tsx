@@ -6,7 +6,7 @@ const quickLinks = [
   { label: 'Home', sectionId: 'home' },
   { label: 'Why InvestPro', sectionId: 'why-us' },
   { label: 'Tier Plans', sectionId: 'plans' },
-  { label: 'Investor Profile', sectionId: 'investor' },
+  { label: 'For Investors', sectionId: 'investor' },
   { label: 'Intelligence Desk', sectionId: 'blogs' },
   { label: 'FAQs', sectionId: 'faq' },
 ];
@@ -42,26 +42,26 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-slate-950 text-white pt-20 pb-10 border-t border-slate-800/80 relative">
+    <footer className="bg-slate-50 text-slate-700 pt-20 pb-10 border-t border-amber-200/80 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-slate-800/80">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-amber-200/60">
           {/* Brand & Socials */}
           <div className="md:col-span-5 space-y-5">
             <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 font-black text-xl shadow-md shadow-amber-500/20">
                 I
               </div>
               <div className="flex flex-col">
-                <span className="text-white text-xl font-black tracking-tight flex items-center gap-1">
-                  Invest<span className="text-amber-400">Pro</span>
+                <span className="text-slate-950 text-xl font-black tracking-tight flex items-center gap-1">
+                  Invest<span className="text-amber-600">Pro</span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">
                   Institutional Wealth & Digital Custody
                 </span>
               </div>
             </Link>
 
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-slate-600 text-sm leading-relaxed max-w-sm">
               Next-generation digital wealth management engine. Delivering predictable compounding returns through structured tier plans, biometric KYC, and cold vault reserve custody.
             </p>
 
@@ -71,7 +71,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="InvestPro Facebook"
-                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-500 hover:text-amber-600 transition shadow-sm"
               >
                 <Facebook className="w-4 h-4" />
               </a>
@@ -81,7 +81,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="InvestPro Twitter"
-                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-500 hover:text-amber-600 transition shadow-sm"
               >
                 <Twitter className="w-4 h-4" />
               </a>
@@ -91,176 +91,125 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="InvestPro LinkedIn"
-                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-500 hover:text-amber-600 transition shadow-sm"
               >
                 <Linkedin className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="md:col-span-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4">Platform Navigation</h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              {quickLinks.map((item) => (
-                <li key={item.label}>
+          {/* Quick Links Column */}
+          <div className="md:col-span-3 space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-950">Platform Navigation</h3>
+            <ul className="space-y-2.5 text-xs font-semibold">
+              {quickLinks.map((link) => (
+                <li key={link.sectionId}>
                   <button
-                    type="button"
-                    onClick={() => handleLinkClick(item.sectionId)}
-                    className="text-slate-400 hover:text-amber-400 transition cursor-pointer text-left"
+                    onClick={() => handleLinkClick(link.sectionId)}
+                    className="text-slate-600 hover:text-amber-700 transition cursor-pointer text-left"
                   >
-                    {item.label}
+                    {link.label}
                   </button>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Support & Legal */}
-          <div className="md:col-span-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4">Custody & Compliance</h3>
-            <ul className="space-y-2.5 text-xs font-medium">
-              <li>
-                <button
-                  type="button"
-                  onClick={() => handleLinkClick('faq')}
-                  className="text-slate-400 hover:text-white transition cursor-pointer text-left"
-                >
-                  Help Desk & FAQs
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setActiveModal('privacy')}
-                  className="text-slate-400 hover:text-white transition cursor-pointer text-left"
-                >
-                  Biometric Privacy Policy
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setActiveModal('terms')}
-                  className="text-slate-400 hover:text-white transition cursor-pointer text-left"
-                >
-                  Institutional Terms of Service
-                </button>
-              </li>
-              <li>
-                <Link
-                  to="/admin/login"
-                  className="text-slate-500 hover:text-amber-400 transition text-left inline-flex items-center gap-1.5 pt-2"
-                >
-                  <Lock className="h-3 w-3" />
-                  <span>Admin & Compliance Console</span>
-                </Link>
-              </li>
-            </ul>
+          {/* Institutional Compliance Column */}
+          <div className="md:col-span-4 space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-950">Custody & Compliance</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Reserves are independently accounted for with 100% cold vault segregation and algorithmic health auditing.
+            </p>
+
+            <div className="space-y-2 pt-1 text-xs text-slate-600 font-medium">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>Automated Biometric KYC</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>Zero Hidden Management Fees</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>24/7 Concierge Support Desk</span>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center gap-4 text-xs font-bold text-slate-500">
+              <button
+                onClick={() => setActiveModal('privacy')}
+                className="hover:text-amber-700 transition cursor-pointer underline"
+              >
+                Privacy Policy
+              </button>
+              <span>•</span>
+              <button
+                onClick={() => setActiveModal('terms')}
+                className="hover:text-amber-700 transition cursor-pointer underline"
+              >
+                Terms of Protocol
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Regulatory Disclaimer & Copyright */}
-        <div className="pt-8 space-y-4 text-xs text-slate-500 leading-relaxed">
-          <p>
-            <strong>Risk Notice:</strong> Digital asset investments and structured cryptocurrency yield products involve market volatility and capital risk. Past returns are illustrative and rate tiers are assigned upon compliance review. Please consult an independent wealth advisor before participating.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-900 text-slate-400">
-            <p>© {new Date().getFullYear()} InvestPro Platform. All Rights Reserved.</p>
-            <p>
-              Engineered with Precision by{' '}
-              <a
-                href="https://www.trustingbrains.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-300 hover:text-amber-400 transition font-bold"
-              >
-                TrustingBrains
-              </a>
-            </p>
+        {/* Bottom Disclaimer & Copyright */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
+          <div>
+            &copy; {new Date().getFullYear()} InvestPro Platform. All rights reserved.
+          </div>
+          <div className="text-[11px] text-slate-400 text-center sm:text-right">
+            Design and Development by trustingbrain
           </div>
         </div>
       </div>
 
       {/* Privacy Policy Modal */}
       {activeModal === 'privacy' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-xl w-full p-6 sm:p-8 text-slate-900 shadow-2xl max-h-[80vh] overflow-y-auto relative">
             <button
               onClick={() => setActiveModal(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                <Shield className="w-5 h-5" />
-              </div>
-              <h3 className="text-xl font-black">Biometric & Identity Privacy Policy</h3>
-            </div>
-            <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
-              <p>
-                At InvestPro, we respect your privacy and are committed to safeguarding personal, biometric, and
-                financial data collected through our onboarding, account management, and investment services.
-              </p>
-              <h4 className="font-bold text-slate-900">1. Information We Collect</h4>
-              <p>
-                We collect your full name, email address, phone number, country of residence, government-issued ID proofs
-                (Front and Back), and live biometric facial photographs strictly for KYC compliance.
-              </p>
-              <h4 className="font-bold text-slate-900">2. Security and Cold Vault Protection</h4>
-              <p>
-                We implement 256-bit SSL encryption, tokenized authentication, and isolated Cloudinary storage vaults
-                ensuring all records are guarded against unauthorized digital extraction.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-              <button
-                onClick={() => setActiveModal(null)}
-                className="bg-slate-900 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition"
-              >
-                Close Notice
-              </button>
-            </div>
+            <h3 className="text-xl font-black mb-3">Privacy & Identity Policy</h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              InvestPro strictly protects all investor personal identifiers and identity documents. Encrypted records are stored in isolated vault architectures with zero third-party data monetization.
+            </p>
+            <button
+              onClick={() => setActiveModal(null)}
+              className="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
 
-      {/* Terms of Service Modal */}
+      {/* Terms Modal */}
       {activeModal === 'terms' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto relative shadow-2xl border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-xl w-full p-6 sm:p-8 text-slate-900 shadow-2xl max-h-[80vh] overflow-y-auto relative">
             <button
               onClick={() => setActiveModal(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                <FileText className="w-5 h-5" />
-              </div>
-              <h3 className="text-xl font-black">Institutional Terms of Service</h3>
-            </div>
-            <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
-              <p>
-                By registering with InvestPro, you agree to comply with platform compliance rules, tier specifications,
-                and digital asset custody policies.
-              </p>
-              <h4 className="font-bold text-slate-900">1. Account Activation</h4>
-              <p>
-                Account approval is granted following document verification by compliance officers. Rate yields are fixed
-                per tier and visible in real time on your dashboard.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end">
-              <button
-                onClick={() => setActiveModal(null)}
-                className="bg-slate-900 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition"
-              >
-                Close Notice
-              </button>
-            </div>
+            <h3 className="text-xl font-black mb-3">Terms of Protocol</h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              All yield distributions are calculated per plan schedule parameters. Capital redemptions follow transparent tier settlement rules.
+            </p>
+            <button
+              onClick={() => setActiveModal(null)}
+              className="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

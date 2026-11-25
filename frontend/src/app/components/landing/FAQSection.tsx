@@ -6,7 +6,7 @@ const faqs = [
   {
     question: 'How do I get started with InvestPro?',
     answer:
-      'Getting started is quick and straightforward. Click "Get Started" to fill out our registration form and upload your identity documents (ID Front, Back, and Live Selfie). Once our automated compliance pipeline reviews and activates your account, you will be able to log in to your personal wealth dashboard.',
+      'Getting started is quick and simple. Click "Get Started" to fill out our 1-minute registration form. You can log in immediately with your email or generated User ID, and complete your KYC identity verification anytime from your profile.',
   },
   {
     question: 'How are personalized tier interest and referral rates assigned?',
@@ -14,9 +14,9 @@ const faqs = [
       'Rates are determined by our algorithmic compliance desk based on your capital tier (Bronze, Silver, Gold). Your verified monthly returns and referral bonus percentages are locked in and clearly displayed on your dashboard.',
   },
   {
-    question: 'How does the multi-tier referral bonus program work?',
+    question: 'How does the referral program work?',
     answer:
-      'Every active member receives an exclusive referral link and code. When your referred partners join and activate a tier plan, commission bonuses (up to 5.0%) are credited directly into your investor wallet with real-time auditability.',
+      'Every active member receives an exclusive referral link and code. When your referred partners join and activate a plan, direct commission bonuses (2.0% to 3.0%) are credited directly into your investor wallet with real-time auditability.',
   },
   {
     question: 'How do I fund my account and activate an investment plan?',

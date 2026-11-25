@@ -5,7 +5,7 @@ import { signUserToken } from "../utils/jwt.js";
 import { prisma } from "../utils/prisma.js";
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().min(2), // accepts email OR user ID (e.g. krtimpex@gmail.com or KRTIMPEX)
   password: z.string().min(6)
 });
 
@@ -18,7 +18,8 @@ export async function activateAccountController(req: Request, res: Response) {
   try {
     const payload = activateSchema.parse(req.body);
     const user = await activateAccount(payload.token, payload.password);
-    return res.json({ user: { id: user.id, email: user.email } });
+    const userIdCode = user.email.split("@")[0]?.toUpperCase() ?? "";
+    return res.json({ user: { id: user.id, email: user.email, userId: userIdCode } });
   } catch (error: any) {
     console.error("Activation error", { message: error?.message });
     return res.status(400).json({ message: error?.message || "Activation failed" });
@@ -29,7 +30,7 @@ export async function loginController(req: Request, res: Response) {
   const payload = loginSchema.parse(req.body);
   const user = await loginUser(payload.email, payload.password);
   if (!user) {
-    console.warn("Login failed", { email: payload.email });
+    console.warn("Login failed", { identifier: payload.email });
     return res.status(401).json({ message: "Invalid credentials" });
   }
   if (user.status !== "ACTIVE") {
@@ -38,9 +39,10 @@ export async function loginController(req: Request, res: Response) {
   }
 
   const token = signUserToken({ userId: user.id });
+  const userIdCode = user.email.split("@")[0]?.toUpperCase() ?? "";
   return res.json({
     token,
-    user: { id: user.id, fullName: user.fullName, email: user.email }
+    user: { id: user.id, fullName: user.fullName, email: user.email, userId: userIdCode }
   });
 }
 
@@ -69,5 +71,6 @@ export async function meController(req: Request, res: Response) {
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-  return res.json({ user });
+  const userIdCode = user.email.split("@")[0]?.toUpperCase() ?? "";
+  return res.json({ user: { ...user, userId: userIdCode } });
 }

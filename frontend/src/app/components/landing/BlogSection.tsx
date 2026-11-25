@@ -40,8 +40,8 @@ const allBlogArticles: Article[] = [
   },
   {
     id: 'referral-program',
-    title: 'Transparent Multi-Tier Referral Networks That Compound',
-    excerpt: 'Why verifiable, real-time commission structures empower platform trust.',
+    title: 'Transparent Referral Program Engineered for Trust',
+    excerpt: 'Why direct, verifiable commission structures empower investor confidence.',
     date: 'Apr 25, 2026',
     readTime: '3 min read',
     tag: 'Ecosystem & Growth',
@@ -86,20 +86,20 @@ export function BlogSection() {
   const displayedArticles = showAll ? allBlogArticles : allBlogArticles.slice(0, 3);
 
   return (
-    <section id="blogs" className="py-24 bg-slate-100 text-slate-900 relative">
+    <section id="blogs" className="py-24 bg-gradient-to-b from-white via-amber-50/20 to-white text-slate-900 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Banner Header */}
-        <div className="relative overflow-hidden rounded-3xl bg-slate-950 p-8 sm:p-12 mb-10 shadow-2xl text-white border border-slate-800">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-72 w-72 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 p-8 sm:p-12 mb-10 shadow-xl shadow-amber-500/15 text-slate-950 border border-amber-300">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-72 w-72 rounded-full bg-white/20 blur-2xl pointer-events-none" />
           <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950 text-amber-300 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
               <span>InvestPro Intelligence & Research Desk</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-3">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-950 mb-3">
               Strategic Insights & Wealth Intelligence
             </h2>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            <p className="text-slate-900/90 text-sm sm:text-base leading-relaxed font-medium">
               Curated market reports, risk engineering whitepapers, and digital asset strategies curated by our private research desk.
             </p>
           </div>
