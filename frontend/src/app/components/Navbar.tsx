@@ -78,11 +78,10 @@ export function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
             ? 'bg-white/95 backdrop-blur-xl border-b border-amber-200/80 shadow-md shadow-amber-900/5'
             : 'bg-white/90 backdrop-blur-md border-b border-amber-100/80'
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[72px]">
@@ -96,7 +95,7 @@ export function Navbar() {
                   Invest<span className="text-amber-600">Zora</span>
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">
-                  Wealth & Custody (USD)
+                  Wealth Management
                 </span>
               </div>
             </Link>
@@ -110,11 +109,10 @@ export function Navbar() {
                     <button
                       key={sectionId}
                       onClick={() => handleNavClick(sectionId)}
-                      className={`relative px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                        isActive
+                      className={`relative px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer ${isActive
                           ? 'text-slate-950 bg-white shadow-sm border border-amber-200/70 font-extrabold'
                           : 'text-slate-600 hover:text-amber-700 hover:bg-amber-50/80'
-                      }`}
+                        }`}
                     >
                       {label}
                       {isActive && (
@@ -159,9 +157,8 @@ export function Navbar() {
 
       {/* Mobile Menu Drawer */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
-          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
       >
         <div
           className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
@@ -169,9 +166,8 @@ export function Navbar() {
         />
 
         <div
-          className={`absolute top-[72px] left-0 right-0 bg-white/98 backdrop-blur-2xl border-t border-amber-200/80 shadow-2xl transition-all duration-300 ${
-            mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-          }`}
+          className={`absolute top-[72px] left-0 right-0 bg-white/98 backdrop-blur-2xl border-t border-amber-200/80 shadow-2xl transition-all duration-300 ${mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+            }`}
         >
           <div className="px-5 py-6 space-y-2">
             {isLandingPage &&
@@ -181,11 +177,10 @@ export function Navbar() {
                   <button
                     key={sectionId}
                     onClick={() => handleNavClick(sectionId)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition cursor-pointer ${
-                      isActive
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition cursor-pointer ${isActive
                         ? 'bg-amber-50 text-amber-900 border border-amber-200'
                         : 'text-slate-700 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     <span>{label}</span>
                     {isActive && <span className="w-2 h-2 rounded-full bg-amber-500" />}

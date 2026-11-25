@@ -102,7 +102,7 @@ export function LoginPage() {
                   Email or User ID
                 </label>
                 <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  e.g. KRTIMPEX
+                  e.g. abc
                 </span>
               </div>
               <div className="relative">
