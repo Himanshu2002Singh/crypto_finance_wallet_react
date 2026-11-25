@@ -8,6 +8,10 @@ export async function createUserWithdrawal(input: {
   network?: string;
   password: string;
 }) {
+  if (!(prisma as any).withdrawal) {
+    throw new Error("Withdrawal service is currently initializing. Please try again shortly.");
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: input.userId }
   });
@@ -40,7 +44,7 @@ export async function createUserWithdrawal(input: {
 
   const network = input.network?.trim() || "USDT (TRC20)";
 
-  const withdrawal = await prisma.withdrawal.create({
+  const withdrawal = await (prisma as any).withdrawal.create({
     data: {
       userId: user.id,
       amount: input.amount,
@@ -55,28 +59,44 @@ export async function createUserWithdrawal(input: {
 }
 
 export async function getUserWithdrawals(userId: string) {
-  return prisma.withdrawal.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" }
-  });
+  if (!(prisma as any).withdrawal) {
+    return [];
+  }
+  try {
+    return await (prisma as any).withdrawal.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" }
+    });
+  } catch (err: any) {
+    console.warn("getUserWithdrawals fallback:", err?.message);
+    return [];
+  }
 }
 
 export async function getAdminWithdrawals(status?: string) {
-  return prisma.withdrawal.findMany({
-    where: status && status !== "ALL" ? { status: status as any } : undefined,
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          phone: true,
-          country: true
+  if (!(prisma as any).withdrawal) {
+    return [];
+  }
+  try {
+    return await (prisma as any).withdrawal.findMany({
+      where: status && status !== "ALL" ? { status: status as any } : undefined,
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            country: true
+          }
         }
-      }
-    },
-    orderBy: { createdAt: "desc" }
-  });
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  } catch (err: any) {
+    console.warn("getAdminWithdrawals fallback:", err?.message);
+    return [];
+  }
 }
 
 export async function approveWithdrawal(input: {
@@ -85,7 +105,11 @@ export async function approveWithdrawal(input: {
   txHash?: string;
   note?: string;
 }) {
-  const withdrawal = await prisma.withdrawal.findUnique({
+  if (!(prisma as any).withdrawal) {
+    throw new Error("Withdrawal table is not initialized on the database.");
+  }
+
+  const withdrawal = await (prisma as any).withdrawal.findUnique({
     where: { id: input.withdrawalId }
   });
 
@@ -97,7 +121,7 @@ export async function approveWithdrawal(input: {
     throw new Error(`Withdrawal request has already been ${withdrawal.status.toLowerCase()}.`);
   }
 
-  return prisma.withdrawal.update({
+  return (prisma as any).withdrawal.update({
     where: { id: input.withdrawalId },
     data: {
       status: "APPROVED",
@@ -114,7 +138,11 @@ export async function rejectWithdrawal(input: {
   adminId: string;
   note?: string;
 }) {
-  const withdrawal = await prisma.withdrawal.findUnique({
+  if (!(prisma as any).withdrawal) {
+    throw new Error("Withdrawal table is not initialized on the database.");
+  }
+
+  const withdrawal = await (prisma as any).withdrawal.findUnique({
     where: { id: input.withdrawalId }
   });
 
@@ -126,7 +154,7 @@ export async function rejectWithdrawal(input: {
     throw new Error(`Withdrawal request has already been ${withdrawal.status.toLowerCase()}.`);
   }
 
-  return prisma.withdrawal.update({
+  return (prisma as any).withdrawal.update({
     where: { id: input.withdrawalId },
     data: {
       status: "REJECTED",
@@ -136,4 +164,3 @@ export async function rejectWithdrawal(input: {
     }
   });
 }
-

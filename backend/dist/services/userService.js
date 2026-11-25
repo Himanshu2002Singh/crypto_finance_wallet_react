@@ -55,17 +55,26 @@ export async function getUserDashboard(userId) {
     };
 }
 export async function choosePlan(userId, planId) {
-    const existingActive = await prisma.userPlan.findFirst({
-        where: { userId, status: "ACTIVE" }
-    });
-    if (existingActive) {
-        throw new Error("Active plan already exists");
+    // Resolve plan by ID or by name
+    let targetPlan = await prisma.plan.findUnique({ where: { id: planId } });
+    if (!targetPlan) {
+        targetPlan = await prisma.plan.findFirst({
+            where: { name: { equals: planId } }
+        });
     }
+    if (!targetPlan) {
+        throw new Error("Target plan not found");
+    }
+    // Deactivate any previous plans for this user so the new plan is instantly active
+    await prisma.userPlan.updateMany({
+        where: { userId, status: "ACTIVE" },
+        data: { status: "CANCELLED" }
+    });
     return prisma.userPlan.create({
         data: {
             userId,
-            planId,
-            status: "PENDING"
+            planId: targetPlan.id,
+            status: "ACTIVE"
         },
         include: { plan: true }
     });

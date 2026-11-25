@@ -1,6 +1,9 @@
 import bcrypt from "bcrypt";
 import { prisma } from "../utils/prisma.js";
 export async function createUserWithdrawal(input) {
+    if (!prisma.withdrawal) {
+        throw new Error("Withdrawal service is currently initializing. Please try again shortly.");
+    }
     const user = await prisma.user.findUnique({
         where: { id: input.userId }
     });
@@ -38,29 +41,50 @@ export async function createUserWithdrawal(input) {
     return withdrawal;
 }
 export async function getUserWithdrawals(userId) {
-    return prisma.withdrawal.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" }
-    });
+    if (!prisma.withdrawal) {
+        return [];
+    }
+    try {
+        return await prisma.withdrawal.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" }
+        });
+    }
+    catch (err) {
+        console.warn("getUserWithdrawals fallback:", err?.message);
+        return [];
+    }
 }
 export async function getAdminWithdrawals(status) {
-    return prisma.withdrawal.findMany({
-        where: status && status !== "ALL" ? { status: status } : undefined,
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    fullName: true,
-                    email: true,
-                    phone: true,
-                    country: true
+    if (!prisma.withdrawal) {
+        return [];
+    }
+    try {
+        return await prisma.withdrawal.findMany({
+            where: status && status !== "ALL" ? { status: status } : undefined,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        email: true,
+                        phone: true,
+                        country: true
+                    }
                 }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    });
+            },
+            orderBy: { createdAt: "desc" }
+        });
+    }
+    catch (err) {
+        console.warn("getAdminWithdrawals fallback:", err?.message);
+        return [];
+    }
 }
 export async function approveWithdrawal(input) {
+    if (!prisma.withdrawal) {
+        throw new Error("Withdrawal table is not initialized on the database.");
+    }
     const withdrawal = await prisma.withdrawal.findUnique({
         where: { id: input.withdrawalId }
     });
@@ -82,6 +106,9 @@ export async function approveWithdrawal(input) {
     });
 }
 export async function rejectWithdrawal(input) {
+    if (!prisma.withdrawal) {
+        throw new Error("Withdrawal table is not initialized on the database.");
+    }
     const withdrawal = await prisma.withdrawal.findUnique({
         where: { id: input.withdrawalId }
     });

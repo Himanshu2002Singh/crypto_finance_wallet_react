@@ -30,8 +30,25 @@ export async function activateAccount(token, password) {
     console.info("Account activated", { userId: user.id });
     return user;
 }
-export async function loginUser(email, password) {
-    const user = await prisma.user.findUnique({ where: { email } });
+export async function loginUser(identifier, password) {
+    const cleanId = identifier.trim();
+    let user = null;
+    if (cleanId.includes("@")) {
+        user = await prisma.user.findFirst({
+            where: { email: cleanId.toLowerCase() }
+        });
+    }
+    else {
+        // Allows logging in by User ID (e.g. KRTIMPEX)
+        user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: { startsWith: `${cleanId.toLowerCase()}@` } },
+                    { email: cleanId.toLowerCase() }
+                ]
+            }
+        });
+    }
     if (!user || !user.passwordHash) {
         return null;
     }

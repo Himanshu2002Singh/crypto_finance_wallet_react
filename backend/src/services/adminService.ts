@@ -18,10 +18,12 @@ export async function adminLogin(email: string, password: string) {
 
 export async function getAdminDashboard() {
   let pendingWithdrawals = 0;
-  try {
-    pendingWithdrawals = await prisma.withdrawal.count({ where: { status: "PENDING" } });
-  } catch {
-    // fallback if table being created
+  if ((prisma as any).withdrawal) {
+    try {
+      pendingWithdrawals = await (prisma as any).withdrawal.count({ where: { status: "PENDING" } });
+    } catch {
+      // fallback if table being created
+    }
   }
 
   const [totalLeads, pendingLeads, approvedUsers, activeUsers] = await Promise.all([
@@ -66,27 +68,53 @@ export async function approveLead(input: {
     throw new Error("Lead password is missing. Ask the user to submit the updated signup form.");
   }
 
-  const user = await prisma.user.create({
-    data: {
-      fullName: lead.fullName,
-      email: lead.email,
-      phone: lead.phone,
-      country: lead.country,
-      idProofUrl: lead.idProofUrl,
-      photoUrl: lead.photoUrl,
-      bronzeReturnRate: input.bronzeReturnRate,
-      silverReturnRate: input.silverReturnRate,
-      goldReturnRate: input.goldReturnRate,
-      referralRate: input.bronzeReferralRate,
-      bronzeReferralRate: input.bronzeReferralRate,
-      silverReferralRate: input.silverReferralRate,
-      goldReferralRate: input.goldReferralRate,
-      status: "ACTIVE",
-      passwordHash: lead.passwordHash,
-      activatedAt: new Date(),
-      lead: { connect: { id: lead.id } }
+  let user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { leadId: lead.id },
+        { email: lead.email },
+        { phone: lead.phone }
+      ]
     }
   });
+
+  if (user) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        bronzeReturnRate: input.bronzeReturnRate,
+        silverReturnRate: input.silverReturnRate,
+        goldReturnRate: input.goldReturnRate,
+        referralRate: input.bronzeReferralRate,
+        bronzeReferralRate: input.bronzeReferralRate,
+        silverReferralRate: input.silverReferralRate,
+        goldReferralRate: input.goldReferralRate,
+        status: "ACTIVE"
+      }
+    });
+  } else {
+    user = await prisma.user.create({
+      data: {
+        fullName: lead.fullName,
+        email: lead.email,
+        phone: lead.phone,
+        country: lead.country,
+        idProofUrl: lead.idProofUrl,
+        photoUrl: lead.photoUrl,
+        bronzeReturnRate: input.bronzeReturnRate,
+        silverReturnRate: input.silverReturnRate,
+        goldReturnRate: input.goldReturnRate,
+        referralRate: input.bronzeReferralRate,
+        bronzeReferralRate: input.bronzeReferralRate,
+        silverReferralRate: input.silverReferralRate,
+        goldReferralRate: input.goldReferralRate,
+        status: "ACTIVE",
+        passwordHash: lead.passwordHash,
+        activatedAt: new Date(),
+        lead: { connect: { id: lead.id } }
+      }
+    });
+  }
 
   await prisma.lead.update({
     where: { id: lead.id },

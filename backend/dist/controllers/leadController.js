@@ -22,34 +22,50 @@ async function processFile(file, folder) {
     }
 }
 export async function submitLead(req, res) {
-    const payload = leadSchema.parse(req.body);
-    const files = req.files;
-    let idProofUrl = payload.idProofUrl;
-    let photoUrl = payload.photoUrl;
-    let frontUrl = undefined;
-    let backUrl = undefined;
-    if (files?.idProof?.[0]) {
-        frontUrl = await processFile(files.idProof[0], "invest-pro/id-proofs");
+    try {
+        const payload = leadSchema.parse(req.body);
+        const files = req.files;
+        let idProofUrl = payload.idProofUrl;
+        let photoUrl = payload.photoUrl;
+        let frontUrl = undefined;
+        let backUrl = undefined;
+        if (files?.idProof?.[0]) {
+            frontUrl = await processFile(files.idProof[0], "invest-pro/id-proofs");
+        }
+        if (files?.idProofBack?.[0]) {
+            backUrl = await processFile(files.idProofBack[0], "invest-pro/id-proofs");
+        }
+        if (frontUrl && backUrl) {
+            idProofUrl = JSON.stringify({ front: frontUrl, back: backUrl });
+        }
+        else if (frontUrl) {
+            idProofUrl = JSON.stringify({ front: frontUrl, back: null });
+        }
+        else if (backUrl) {
+            idProofUrl = JSON.stringify({ front: null, back: backUrl });
+        }
+        if (files?.photo?.[0]) {
+            photoUrl = await processFile(files.photo[0], "invest-pro/photos");
+        }
+        const lead = await createLead({
+            ...payload,
+            idProofUrl,
+            photoUrl
+        });
+        return res.status(201).json({
+            lead,
+            message: "Registration completed successfully. You can now log in."
+        });
     }
-    if (files?.idProofBack?.[0]) {
-        backUrl = await processFile(files.idProofBack[0], "invest-pro/id-proofs");
+    catch (err) {
+        console.error("submitLead error:", err);
+        if (err?.code === "P2002") {
+            return res.status(400).json({
+                message: "An account with this phone number or email is already registered. Please log in directly."
+            });
+        }
+        return res.status(400).json({
+            message: err?.message || "Failed to process registration"
+        });
     }
-    if (frontUrl && backUrl) {
-        idProofUrl = JSON.stringify({ front: frontUrl, back: backUrl });
-    }
-    else if (frontUrl) {
-        idProofUrl = JSON.stringify({ front: frontUrl, back: null });
-    }
-    else if (backUrl) {
-        idProofUrl = JSON.stringify({ front: null, back: backUrl });
-    }
-    if (files?.photo?.[0]) {
-        photoUrl = await processFile(files.photo[0], "invest-pro/photos");
-    }
-    const lead = await createLead({
-        ...payload,
-        idProofUrl,
-        photoUrl
-    });
-    return res.status(201).json({ lead });
 }

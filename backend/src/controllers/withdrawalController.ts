@@ -31,19 +31,23 @@ export async function createWithdrawalController(req: AuthedRequest, res: Respon
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const payload = createWithdrawalSchema.parse(req.body);
-  const withdrawal = await createUserWithdrawal({
-    userId,
-    amount: payload.amount,
-    walletAddress: payload.walletAddress,
-    network: payload.network,
-    password: payload.password
-  });
+  try {
+    const payload = createWithdrawalSchema.parse(req.body);
+    const withdrawal = await createUserWithdrawal({
+      userId,
+      amount: payload.amount,
+      walletAddress: payload.walletAddress,
+      network: payload.network,
+      password: payload.password
+    });
 
-  return res.status(201).json({
-    message: "Withdrawal request authorized and submitted successfully.",
-    withdrawal
-  });
+    return res.status(201).json({
+      message: "Withdrawal request authorized and submitted successfully.",
+      withdrawal
+    });
+  } catch (err: any) {
+    return res.status(400).json({ message: err?.message || "Failed to submit withdrawal request." });
+  }
 }
 
 export async function listUserWithdrawalsController(req: AuthedRequest, res: Response) {
@@ -52,14 +56,24 @@ export async function listUserWithdrawalsController(req: AuthedRequest, res: Res
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const withdrawals = await getUserWithdrawals(userId);
-  return res.json({ withdrawals });
+  try {
+    const withdrawals = await getUserWithdrawals(userId);
+    return res.json({ withdrawals });
+  } catch (err: any) {
+    console.warn("listUserWithdrawalsController error:", err?.message);
+    return res.json({ withdrawals: [] });
+  }
 }
 
 export async function adminListWithdrawalsController(req: AuthedRequest, res: Response) {
-  const status = req.query.status as string | undefined;
-  const withdrawals = await getAdminWithdrawals(status);
-  return res.json({ withdrawals });
+  try {
+    const status = req.query.status as string | undefined;
+    const withdrawals = await getAdminWithdrawals(status);
+    return res.json({ withdrawals });
+  } catch (err: any) {
+    console.warn("adminListWithdrawalsController error:", err?.message);
+    return res.json({ withdrawals: [] });
+  }
 }
 
 export async function adminApproveWithdrawalController(req: AuthedRequest, res: Response) {
@@ -68,18 +82,22 @@ export async function adminApproveWithdrawalController(req: AuthedRequest, res: 
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const payload = approveWithdrawalSchema.parse(req.body);
-  const withdrawal = await approveWithdrawal({
-    withdrawalId: req.params.id,
-    adminId,
-    txHash: payload.txHash,
-    note: payload.note
-  });
+  try {
+    const payload = approveWithdrawalSchema.parse(req.body);
+    const withdrawal = await approveWithdrawal({
+      withdrawalId: req.params.id,
+      adminId,
+      txHash: payload.txHash,
+      note: payload.note
+    });
 
-  return res.json({
-    message: "Withdrawal request approved and marked settled.",
-    withdrawal
-  });
+    return res.json({
+      message: "Withdrawal request approved and marked settled.",
+      withdrawal
+    });
+  } catch (err: any) {
+    return res.status(400).json({ message: err?.message || "Failed to approve withdrawal." });
+  }
 }
 
 export async function adminRejectWithdrawalController(req: AuthedRequest, res: Response) {
@@ -88,16 +106,20 @@ export async function adminRejectWithdrawalController(req: AuthedRequest, res: R
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const payload = rejectWithdrawalSchema.parse(req.body);
-  const withdrawal = await rejectWithdrawal({
-    withdrawalId: req.params.id,
-    adminId,
-    note: payload.note
-  });
+  try {
+    const payload = rejectWithdrawalSchema.parse(req.body);
+    const withdrawal = await rejectWithdrawal({
+      withdrawalId: req.params.id,
+      adminId,
+      note: payload.note
+    });
 
-  return res.json({
-    message: "Withdrawal request rejected.",
-    withdrawal
-  });
+    return res.json({
+      message: "Withdrawal request rejected.",
+      withdrawal
+    });
+  } catch (err: any) {
+    return res.status(400).json({ message: err?.message || "Failed to reject withdrawal." });
+  }
 }
 

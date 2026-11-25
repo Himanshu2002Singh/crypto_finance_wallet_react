@@ -27,23 +27,28 @@ export async function activateAccountController(req: Request, res: Response) {
 }
 
 export async function loginController(req: Request, res: Response) {
-  const payload = loginSchema.parse(req.body);
-  const user = await loginUser(payload.email, payload.password);
-  if (!user) {
-    console.warn("Login failed", { identifier: payload.email });
-    return res.status(401).json({ message: "Invalid credentials" });
-  }
-  if (user.status !== "ACTIVE") {
-    console.warn("Login blocked for inactive user", { userId: user.id });
-    return res.status(403).json({ message: "Account not active" });
-  }
+  try {
+    const payload = loginSchema.parse(req.body);
+    const user = await loginUser(payload.email, payload.password);
+    if (!user) {
+      console.warn("Login failed", { identifier: payload.email });
+      return res.status(401).json({ message: "Invalid credentials. Please verify your Email or User ID and password." });
+    }
+    if (user.status !== "ACTIVE") {
+      console.warn("Login blocked for inactive user", { userId: user.id });
+      return res.status(403).json({ message: "Account not active" });
+    }
 
-  const token = signUserToken({ userId: user.id });
-  const userIdCode = user.email.split("@")[0]?.toUpperCase() ?? "";
-  return res.json({
-    token,
-    user: { id: user.id, fullName: user.fullName, email: user.email, userId: userIdCode }
-  });
+    const token = signUserToken({ userId: user.id });
+    const userIdCode = user.email.split("@")[0]?.toUpperCase() ?? "";
+    return res.json({
+      token,
+      user: { id: user.id, fullName: user.fullName, email: user.email, userId: userIdCode }
+    });
+  } catch (err: any) {
+    console.error("Login controller error:", err?.message);
+    return res.status(400).json({ message: err?.message || "Invalid login request" });
+  }
 }
 
 export async function meController(req: Request, res: Response) {
