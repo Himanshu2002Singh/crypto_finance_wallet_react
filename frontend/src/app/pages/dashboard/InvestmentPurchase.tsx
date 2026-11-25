@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -13,7 +13,6 @@ import {
   Building2,
   Copy,
   ArrowRight,
-  ShieldCheck,
 } from 'lucide-react';
 
 interface TierOption {
@@ -25,7 +24,7 @@ interface TierOption {
   tagline: string;
 }
 
-const tiers: TierOption[] = [
+const baseTiers: TierOption[] = [
   {
     id: 'bronze',
     name: 'Bronze',
@@ -55,15 +54,61 @@ const tiers: TierOption[] = [
 export function InvestmentPurchase() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedTier, setSelectedTier] = useState<TierOption>(tiers[1]);
-  const [amount, setAmount] = useState<number>(tiers[1].minPrice);
-  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'upi' | 'balance'>('usdt');
+  const [dashboardRates, setDashboardRates] = useState<any>(null);
+
+  // Fetch verified admin rates from dashboard
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get('/users/dashboard');
+        if (res.data) {
+          setDashboardRates(res.data);
+        }
+      } catch {
+        // Fallback to user auth data
+      }
+    };
+    void fetchDashboard();
+  }, []);
+
+  // Compute dynamic tiers using admin-assigned rates
+  const dynamicTiers = useMemo(() => {
+    const getRate = (name: string) => {
+      const norm = name.toLowerCase();
+      if (norm === 'bronze') return Number(dashboardRates?.bronzeReturnRate) || Number(user?.bronzeReturnRate) || 1.5;
+      if (norm === 'silver') return Number(dashboardRates?.silverReturnRate) || Number(user?.silverReturnRate) || 2.0;
+      if (norm === 'gold') return Number(dashboardRates?.goldReturnRate) || Number(user?.goldReturnRate) || 2.5;
+      return 2.0;
+    };
+
+    const getRef = (name: string) => {
+      const norm = name.toLowerCase();
+      if (norm === 'bronze') return Number(dashboardRates?.bronzeReferralRate) || Number(user?.bronzeReferralRate) || Number(dashboardRates?.referralRate) || 2.0;
+      if (norm === 'silver') return Number(dashboardRates?.silverReferralRate) || Number(user?.silverReferralRate) || Number(dashboardRates?.referralRate) || 2.5;
+      if (norm === 'gold') return Number(dashboardRates?.goldReferralRate) || Number(user?.goldReferralRate) || Number(dashboardRates?.referralRate) || 3.0;
+      return 2.5;
+    };
+
+    return baseTiers.map((t) => ({
+      ...t,
+      ratePct: getRate(t.name),
+      referralPct: getRef(t.name),
+    }));
+  }, [dashboardRates, user]);
+
+  const [selectedTierId, setSelectedTierId] = useState<string>('silver');
+  const selectedTier = useMemo(() => {
+    return dynamicTiers.find((t) => t.id === selectedTierId) || dynamicTiers[1];
+  }, [dynamicTiers, selectedTierId]);
+
+  const [amount, setAmount] = useState<number>(25000);
+  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'usdc' | 'balance'>('usdt');
   const [txHash, setTxHash] = useState('');
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSelectTier = (t: TierOption) => {
-    setSelectedTier(t);
+    setSelectedTierId(t.id);
     setAmount(t.minPrice);
   };
 
@@ -71,7 +116,7 @@ export function InvestmentPurchase() {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Copied to clipboard');
+    toast.success('Address copied to clipboard');
   };
 
   const handleActivate = async () => {
@@ -105,6 +150,7 @@ export function InvestmentPurchase() {
     }
   };
 
+  // Calculations strictly based on admin-assigned rate
   const monthlyYield = Math.round((amount * selectedTier.ratePct) / 100);
   const annualTotal = Math.round(amount + (amount * selectedTier.ratePct * 12) / 100);
 
@@ -124,7 +170,7 @@ export function InvestmentPurchase() {
 
       {/* Tier Selector Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {tiers.map((t) => {
+        {dynamicTiers.map((t) => {
           const isSelected = selectedTier.id === t.id;
           return (
             <div
@@ -202,7 +248,7 @@ export function InvestmentPurchase() {
           </div>
         </div>
 
-        {/* Payment Methods */}
+        {/* Payment Methods (100% International USD & Crypto) */}
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
             Funding Method
@@ -223,15 +269,15 @@ export function InvestmentPurchase() {
 
             <button
               type="button"
-              onClick={() => setPaymentMethod('upi')}
+              onClick={() => setPaymentMethod('usdc')}
               className={`p-3.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition ${
-                paymentMethod === 'upi'
+                paymentMethod === 'usdc'
                   ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
                   : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
               }`}
             >
               <CreditCard className="w-5 h-5 text-amber-600" />
-              <span>Bank IMPS / UPI</span>
+              <span>USDC (ERC20)</span>
             </button>
 
             <button
@@ -267,6 +313,7 @@ export function InvestmentPurchase() {
                 type="button"
                 onClick={() => handleCopy('TYdY8h7Qv3m3N8L6kK2v9xP1w4B7rE8uA')}
                 className="p-2 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition"
+                title="Copy USDT Address"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </button>
@@ -275,29 +322,30 @@ export function InvestmentPurchase() {
               type="text"
               value={txHash}
               onChange={(e) => setTxHash(e.target.value)}
-              placeholder="Enter Transfer TxID (Optional)"
+              placeholder="Enter Transfer TxID / Hash (Optional)"
               className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800"
             />
           </div>
         )}
 
-        {paymentMethod === 'upi' && (
+        {paymentMethod === 'usdc' && (
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2.5 text-xs">
             <div className="flex justify-between font-bold text-slate-800">
-              <span>UPI Payment ID</span>
-              <span className="text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono text-[10px]">Instant IMPS</span>
+              <span>USDC Vault Address (ERC20)</span>
+              <span className="text-sky-800 bg-sky-100 px-2 py-0.5 rounded font-mono text-[10px]">Ethereum / Polygon</span>
             </div>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 readOnly
-                value="investsecure@icici"
+                value="0x71C8A184e9D9Bf06536F2c9f485Bcf978a63581F"
                 className="w-full px-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-800"
               />
               <button
                 type="button"
-                onClick={() => handleCopy('investsecure@icici')}
+                onClick={() => handleCopy('0x71C8A184e9D9Bf06536F2c9f485Bcf978a63581F')}
                 className="p-2 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition"
+                title="Copy USDC Address"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </button>
@@ -306,7 +354,7 @@ export function InvestmentPurchase() {
               type="text"
               value={txHash}
               onChange={(e) => setTxHash(e.target.value)}
-              placeholder="Enter UPI UTR Reference Number (Optional)"
+              placeholder="Enter Transfer TxID / Transaction Hash (Optional)"
               className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800"
             />
           </div>

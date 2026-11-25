@@ -81,11 +81,12 @@ export function DashboardHome() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [plans, setPlans] = useState<Plan[]>(defaultPlans);
   const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
+  const [isSwitchTierModalOpen, setIsSwitchTierModalOpen] = useState(false);
 
   // Plan Execution Modal State
   const [selectedPlanForExecution, setSelectedPlanForExecution] = useState<Plan | null>(null);
-  const [investAmount, setInvestAmount] = useState<number>(25000);
-  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'upi' | 'balance'>('usdt');
+  const [investAmount, setInvestAmount] = useState<number>(10000);
+  const [paymentMethod, setPaymentMethod] = useState<'usdt' | 'usdc' | 'balance'>('usdt');
   const [txHash, setTxHash] = useState('');
   const [copiedAddress, setCopiedAddress] = useState(false);
 
@@ -121,14 +122,14 @@ export function DashboardHome() {
       }
 
       setDashboard({
-        bronzeReturnRate: '1.5',
-        silverReturnRate: '2.0',
-        goldReturnRate: '2.5',
-        referralRate: '2.0',
-        bronzeReferralRate: '2.0',
-        silverReferralRate: '2.5',
-        goldReferralRate: '3.0',
-        activePlan: parsedPlan,
+        bronzeReturnRate: user?.bronzeReturnRate || '1.5',
+        silverReturnRate: user?.silverReturnRate || '2.0',
+        goldReturnRate: user?.goldReturnRate || '2.5',
+        referralRate: user?.referralRate || '2.0',
+        bronzeReferralRate: user?.bronzeReferralRate || '2.0',
+        silverReferralRate: user?.silverReferralRate || '2.5',
+        goldReferralRate: user?.goldReferralRate || '3.0',
+        activePlan: parsedPlan || { name: 'Bronze', price: '10000' },
         referralEarnings: 0,
       });
     }
@@ -139,16 +140,7 @@ export function DashboardHome() {
       try {
         const response = await api.get('/plans');
         if (response.data?.plans && response.data.plans.length > 0) {
-          const apiPlans = response.data.plans.map((p: any) => {
-            const def = defaultPlans.find((d) => d.name.toLowerCase() === p.name.toLowerCase());
-            return {
-              ...p,
-              ratePct: def?.ratePct || 2.0,
-              referralPct: def?.referralPct || 2.5,
-              tagline: def?.tagline || 'Strategic Wealth Tier',
-            };
-          });
-          setPlans(apiPlans);
+          setPlans(response.data.plans);
         }
       } catch {
         setPlans(defaultPlans);
@@ -159,40 +151,116 @@ export function DashboardHome() {
     void loadPlans();
   }, [user]);
 
+  // Helper functions to retrieve the exact admin-assigned rates for each plan
+  const getAssignedRate = (planName: string) => {
+    const norm = planName.toLowerCase();
+    if (norm === 'bronze') {
+      return Number(dashboard?.bronzeReturnRate) || Number(user?.bronzeReturnRate) || 1.5;
+    }
+    if (norm === 'silver') {
+      return Number(dashboard?.silverReturnRate) || Number(user?.silverReturnRate) || 2.0;
+    }
+    if (norm === 'gold') {
+      return Number(dashboard?.goldReturnRate) || Number(user?.goldReturnRate) || 2.5;
+    }
+    return 2.0;
+  };
+
+  const getAssignedReferral = (planName: string) => {
+    const norm = planName.toLowerCase();
+    if (norm === 'bronze') {
+      return Number(dashboard?.bronzeReferralRate) || Number(user?.bronzeReferralRate) || Number(dashboard?.referralRate) || 2.0;
+    }
+    if (norm === 'silver') {
+      return Number(dashboard?.silverReferralRate) || Number(user?.silverReferralRate) || Number(dashboard?.referralRate) || 2.5;
+    }
+    if (norm === 'gold') {
+      return Number(dashboard?.goldReferralRate) || Number(user?.goldReferralRate) || Number(dashboard?.referralRate) || 3.0;
+    }
+    return 2.5;
+  };
+
+  // Dynamically attach the exact admin-assigned interest and referral rates to each plan!
+  const computedPlans = useMemo(() => {
+    return defaultPlans.map((p) => {
+      const assignedRate = getAssignedRate(p.name);
+      const assignedRef = getAssignedReferral(p.name);
+      return {
+        ...p,
+        ratePct: assignedRate,
+        referralPct: assignedRef,
+      };
+    });
+  }, [dashboard, user]);
+
+  // Active plan for the user (default to Bronze if not set)
+  const activePlanName = dashboard?.activePlan?.name || 'Bronze';
+  const activePlan = useMemo(() => {
+    return computedPlans.find((p) => p.name.toLowerCase() === activePlanName.toLowerCase()) || computedPlans[0];
+  }, [computedPlans, activePlanName]);
+
+  // Active principal capital state
+  const [customCapital, setCustomCapital] = useState<number>(() => {
+    const savedActive = localStorage.getItem(`activePlan_${user?.id || userId}`);
+    if (savedActive) {
+      try {
+        const parsed = JSON.parse(savedActive);
+        if (parsed.price) return Number(parsed.price);
+      } catch {}
+    }
+    return Number(activePlan.price);
+  });
+
+  // Sync customCapital when active plan or dashboard changes
+  useEffect(() => {
+    if (dashboard?.activePlan?.price) {
+      setCustomCapital(Number(dashboard.activePlan.price));
+      setInvestAmount(Number(dashboard.activePlan.price));
+    } else {
+      setCustomCapital(Number(activePlan.price));
+      setInvestAmount(Number(activePlan.price));
+    }
+  }, [dashboard?.activePlan, activePlan.price]);
+
+  // Dynamic calculations strictly based on admin-assigned interest rate!
+  const activeRate = activePlan.ratePct;
+  const monthlyYield = Math.round((customCapital * activeRate) / 100);
+  const annualProfit = Math.round((customCapital * activeRate * 12) / 100);
+  const annualTotal = Math.round(customCapital + annualProfit);
+  const annualApy = (activeRate * 12).toFixed(1);
+
   const stats = useMemo(() => {
     return [
       {
-        label: 'Bronze Plan Yield',
-        value: dashboard ? `${dashboard.bronzeReturnRate}% / mo` : '1.5% / mo',
-        sub: '18% Annual APY',
-        icon: '🥉',
-        iconBg: 'bg-amber-100 text-amber-800',
+        label: 'Active Plan Tier',
+        value: `${activePlan.name} Tier`,
+        sub: `$${customCapital.toLocaleString()} USD Active`,
+        icon: activePlan.name === 'Gold' ? '🥇' : activePlan.name === 'Silver' ? '🥈' : '🥉',
+        iconBg: activePlan.name === 'Gold' ? 'bg-amber-100 text-amber-900 border border-amber-300' : activePlan.name === 'Silver' ? 'bg-slate-100 text-slate-900 border border-slate-300' : 'bg-amber-50 text-amber-900 border border-amber-200',
       },
       {
-        label: 'Silver Plan Yield',
-        value: dashboard ? `${dashboard.silverReturnRate}% / mo` : '2.0% / mo',
-        sub: '24% Annual APY',
-        icon: '🥈',
-        iconBg: 'bg-amber-200 text-amber-900',
+        label: 'Assigned Monthly Return',
+        value: `${activePlan.ratePct}% / mo`,
+        sub: `${annualApy}% Annual APY`,
+        icon: '📈',
+        iconBg: 'bg-emerald-50 text-emerald-800 border border-emerald-200',
       },
       {
-        label: 'Gold Plan Yield',
-        value: dashboard ? `${dashboard.goldReturnRate}% / mo` : '2.5% / mo',
-        sub: '30% Annual APY',
-        icon: '🥇',
-        iconBg: 'bg-yellow-100 text-yellow-900',
+        label: 'Projected Monthly Yield',
+        value: `$ ${monthlyYield.toLocaleString()}`,
+        sub: 'Monthly USD Accrual',
+        icon: '💰',
+        iconBg: 'bg-amber-100 text-amber-950 border border-amber-300',
       },
       {
         label: 'Referral Rewards',
-        value: dashboard
-          ? `${dashboard.bronzeReferralRate}% – ${dashboard.goldReferralRate}%`
-          : '2.0% – 3.0%',
-        sub: 'Direct Commission',
+        value: `${activePlan.referralPct}%`,
+        sub: 'Direct Commission Bonus',
         icon: '👥',
-        iconBg: 'bg-emerald-100 text-emerald-800',
+        iconBg: 'bg-sky-50 text-sky-800 border border-sky-200',
       },
     ];
-  }, [dashboard]);
+  }, [activePlan, customCapital, monthlyYield, annualApy]);
 
   const quickActions = [
     { label: 'Invite Referrals', color: 'bg-slate-900 hover:bg-slate-800 text-amber-400', href: '/dashboard/referrals' },
@@ -202,7 +270,7 @@ export function DashboardHome() {
 
   const openPlanExecution = (plan: Plan) => {
     setSelectedPlanForExecution(plan);
-    setInvestAmount(Number(plan.price));
+    setInvestAmount(customCapital >= Number(plan.price) ? customCapital : Number(plan.price));
     setTxHash('');
   };
 
@@ -211,6 +279,12 @@ export function DashboardHome() {
     setCopiedAddress(true);
     setTimeout(() => setCopiedAddress(false), 2000);
     toast.success('Deposit address copied to clipboard');
+  };
+
+  const handleSelectNewTier = async (newPlan: Plan) => {
+    setIsSwitchTierModalOpen(false);
+    setSelectedPlanForExecution(newPlan);
+    setInvestAmount(Number(newPlan.price));
   };
 
   const handleConfirmPlanExecution = async () => {
@@ -235,25 +309,26 @@ export function DashboardHome() {
         price: investAmount.toString(),
       };
       localStorage.setItem(`activePlan_${user?.id || userId}`, JSON.stringify(activeObj));
+      setCustomCapital(investAmount);
 
       setDashboard((prev) =>
         prev
           ? { ...prev, activePlan: activeObj }
           : {
-              bronzeReturnRate: '1.5',
-              silverReturnRate: '2.0',
-              goldReturnRate: '2.5',
-              referralRate: '2.0',
-              bronzeReferralRate: '2.0',
-              silverReferralRate: '2.5',
-              goldReferralRate: '3.0',
+              bronzeReturnRate: user?.bronzeReturnRate || '1.5',
+              silverReturnRate: user?.silverReturnRate || '2.0',
+              goldReturnRate: user?.goldReturnRate || '2.5',
+              referralRate: user?.referralRate || '2.0',
+              bronzeReferralRate: user?.bronzeReferralRate || '2.0',
+              silverReferralRate: user?.silverReferralRate || '2.5',
+              goldReferralRate: user?.goldReferralRate || '3.0',
               activePlan: activeObj,
               referralEarnings: 0,
             }
       );
 
       toast.success(
-        `Success! ${selectedPlanForExecution.name} Tier Plan of $${investAmount.toLocaleString()} USD has been activated.`
+        `Success! ${selectedPlanForExecution.name} Tier Plan of $${investAmount.toLocaleString()} USD is now active.`
       );
       setSelectedPlanForExecution(null);
     } catch (err: any) {
@@ -359,116 +434,270 @@ export function DashboardHome() {
         ))}
       </div>
 
-      {/* Choose Your Plan Execution Grid (Requirement 10) */}
+      {/* Active User Plan Studio (Single Plan with Admin-Assigned Rates) */}
       <div id="plans" className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-amber-200/60">
           <div>
             <h3 className="text-2xl font-black text-slate-950 flex items-center gap-2">
-              <span>Choose & Execute Investment Plan</span>
+              <span>Your Active Investment Plan</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Select your desired capital tier below to execute immediate plan activation.
+              Active tier yield schedule and compounding returns based on your verified rate allocation.
             </p>
           </div>
 
-          {dashboard?.activePlan && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-black self-start sm:self-auto">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              <span>Current Active Plan: {dashboard.activePlan.name} (${Number(dashboard.activePlan.price).toLocaleString()} USD)</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSwitchTierModalOpen(true)}
+              className="px-4 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <span>Switch / Upgrade Tier</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => {
-            const style = planStyles[plan.name] || planStyles.Bronze;
-            const isActive = dashboard?.activePlan?.name.toLowerCase() === plan.name.toLowerCase();
-            const isGold = plan.name === 'Gold';
-
-            return (
-              <div
-                key={plan.id}
-                className={`relative rounded-3xl bg-white border ${style.border} p-7 flex flex-col justify-between shadow-lg hover:shadow-xl transition-all ${
-                  isActive ? 'ring-2 ring-emerald-500 shadow-emerald-500/10' : ''
-                }`}
-              >
-                {/* Active or Popular Badge */}
-                {isActive ? (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-600 text-white text-xs font-black uppercase tracking-wider shadow-md flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Your Active Plan</span>
-                  </div>
-                ) : style.popular ? (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-md">
-                    Most Popular
-                  </div>
-                ) : null}
-
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xl font-black text-slate-950 flex items-center gap-1.5">
-                      {isGold && <Crown className="h-5 w-5 text-amber-500" />}
-                      {plan.name} Tier
-                    </span>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${style.badge}`}>
-                      {plan.ratePct}% / Month
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-500 font-medium mb-5">{plan.tagline}</p>
-
-                  {/* Initial Capital Entry */}
-                  <div className="rounded-2xl bg-amber-50/50 p-4 mb-5 border border-amber-200/60">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 mb-1">
-                      <span>MINIMUM ENTRY (USD)</span>
-                      <span>FIXED PRICING</span>
-                    </div>
-                    <div className="text-3xl font-black text-slate-950">
-                      $ {Number(plan.price).toLocaleString()}
-                    </div>
-                    <div className="mt-3 pt-2.5 border-t border-amber-200/60 flex items-center justify-between text-xs">
-                      <div>
-                        <span className="text-slate-500 block text-[10px]">Monthly Return</span>
-                        <strong className="text-emerald-700 font-black">{plan.ratePct}% / mo</strong>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-slate-500 block text-[10px]">Referral Bonus</span>
-                        <strong className="text-amber-800 font-black">{plan.referralPct}%</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Profit Illustration Preview */}
-                  <div className="rounded-xl bg-slate-50 p-3 mb-6 border border-slate-200 text-xs space-y-1.5">
-                    <div className="flex justify-between text-slate-600">
-                      <span>Monthly Yield:</span>
-                      <strong className="text-emerald-700">${(Number(plan.price) * plan.ratePct / 100).toLocaleString()}</strong>
-                    </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>1-Year Projected Net:</span>
-                      <strong className="text-slate-950">${(Number(plan.price) + Number(plan.price) * plan.ratePct / 100 * 12).toLocaleString()}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Plan Execution Button */}
-                <button
-                  type="button"
-                  onClick={() => openPlanExecution(plan)}
-                  className={`w-full py-3.5 px-4 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
-                    isActive
-                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                      : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 hover:shadow-amber-500/25'
-                  }`}
-                >
-                  <span>{isActive ? 'Manage / Upgrade Plan' : `Choose & Execute ${plan.name}`}</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
+        {/* Single Dedicated Plan Card */}
+        <div className="relative rounded-3xl bg-white border border-amber-300/90 p-6 sm:p-9 shadow-xl shadow-amber-500/10 transition-all">
+          {/* Active Verified Pill */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-5 border-b border-amber-100">
+            <div className="flex items-center gap-2.5">
+              <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-slate-950 font-black shadow-md shadow-amber-500/20">
+                {activePlan.name === 'Gold' ? <Crown className="w-5 h-5" /> : <Coins className="w-5 h-5" />}
+              </span>
+              <div>
+                <h4 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight flex items-center gap-2">
+                  <span>{activePlan.name} Tier Wealth Plan</span>
+                </h4>
+                <p className="text-xs text-slate-500 font-medium">{activePlan.tagline}</p>
               </div>
-            );
-          })}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-black shadow-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>Active & Verified</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsSwitchTierModalOpen(true)}
+                className="text-xs font-bold text-amber-800 hover:text-amber-950 underline px-2 py-1"
+              >
+                Change Tier
+              </button>
+            </div>
+          </div>
+
+          {/* 3 Core Highlight Badges */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="rounded-2xl bg-amber-50/70 border border-amber-200/80 p-4.5">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block mb-1">
+                Assigned Monthly Return
+              </span>
+              <div className="text-3xl font-black text-emerald-700 tracking-tight">
+                {activePlan.ratePct}% <span className="text-sm font-bold text-slate-500">/ month</span>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-800 mt-1 block">
+                {annualApy}% Annual APY Schedule
+              </span>
+            </div>
+
+            <div className="rounded-2xl bg-amber-50/70 border border-amber-200/80 p-4.5">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block mb-1">
+                Active Capital Allocation
+              </span>
+              <div className="text-3xl font-black text-slate-950 tracking-tight">
+                $ {customCapital.toLocaleString()}
+              </div>
+              <span className="text-[11px] font-semibold text-slate-500 mt-1 block">
+                Tier Min: ${Number(activePlan.price).toLocaleString()} USD
+              </span>
+            </div>
+
+            <div className="rounded-2xl bg-amber-50/70 border border-amber-200/80 p-4.5">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block mb-1">
+                Referral Commission
+              </span>
+              <div className="text-3xl font-black text-amber-800 tracking-tight">
+                {activePlan.referralPct}%
+              </div>
+              <span className="text-[11px] font-semibold text-amber-700 mt-1 block">
+                Direct Network Credit
+              </span>
+            </div>
+          </div>
+
+          {/* Dynamic In-Card Profit Breakdown (Calculated strictly based on admin-assigned rate) */}
+          <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-5 sm:p-6 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
+                <span className="text-xs font-black uppercase tracking-wider text-slate-900">
+                  Dynamic Return Illustration ({activePlan.ratePct}% / month rate)
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-semibold text-slate-500">Adjust Capital:</span>
+                <div className="relative inline-flex items-center">
+                  <span className="absolute left-2.5 text-slate-400 font-bold">$</span>
+                  <input
+                    type="number"
+                    min={Number(activePlan.price)}
+                    step="500"
+                    value={customCapital}
+                    onChange={(e) => setCustomCapital(Math.max(100, Number(e.target.value)))}
+                    className="pl-6 pr-2.5 py-1 w-32 rounded-lg border border-slate-300 text-xs font-black text-slate-900 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-sm">
+                <span className="text-slate-500 block text-[11px] font-medium mb-1">Monthly Interest Payout</span>
+                <span className="text-emerald-700 font-black text-lg">
+                  ${monthlyYield.toLocaleString()} <span className="text-xs font-medium text-slate-400">/ mo</span>
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Credited to wallet monthly</span>
+              </div>
+
+              <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-sm">
+                <span className="text-slate-500 block text-[11px] font-medium mb-1">1-Year Net Profit</span>
+                <span className="text-emerald-700 font-black text-lg">
+                  +${annualProfit.toLocaleString()} <span className="text-xs font-medium text-slate-400">USD</span>
+                </span>
+                <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">Based on {activePlan.ratePct}% / mo</span>
+              </div>
+
+              <div className="rounded-xl bg-white p-3.5 border border-slate-200 shadow-sm">
+                <span className="text-slate-500 block text-[11px] font-medium mb-1">1-Year Total (Principal + Profit)</span>
+                <span className="text-slate-950 font-black text-lg">
+                  ${annualTotal.toLocaleString()} <span className="text-xs font-medium text-slate-400">USD</span>
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Full compounding maturity</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => openPlanExecution(activePlan)}
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-black text-xs bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Coins className="w-4 h-4" />
+              <span>Deposit & Fund {activePlan.name} Plan</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSwitchTierModalOpen(true)}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-xs bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span>Switch Plan Tier</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Switch Plan Tier Modal */}
+      {isSwitchTierModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto">
+          <div className="relative rounded-3xl border border-amber-300 bg-white p-6 sm:p-8 max-w-2xl w-full shadow-2xl my-8">
+            <button
+              type="button"
+              onClick={() => setIsSwitchTierModalOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="text-center pb-5 border-b border-amber-100">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-bold border border-amber-200 mb-2">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                <span>Tier Selection Studio</span>
+              </span>
+              <h3 className="text-2xl font-black text-slate-950">
+                Select Your Desired Investment Tier
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Choose a plan tier to view your personalized return rates and execute plan allocation.
+              </p>
+            </div>
+
+            <div className="py-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {computedPlans.map((p) => {
+                const isCurrent = p.name.toLowerCase() === activePlan.name.toLowerCase();
+                const pMonthlyYield = Math.round((Number(p.price) * p.ratePct) / 100);
+
+                return (
+                  <div
+                    key={p.id}
+                    className={`rounded-2xl p-5 border flex flex-col justify-between transition-all ${
+                      isCurrent
+                        ? 'border-emerald-500 bg-emerald-50/30 ring-2 ring-emerald-500/20 shadow-md'
+                        : 'border-slate-200 bg-white hover:border-amber-400 hover:shadow-md'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-black text-lg text-slate-950 flex items-center gap-1">
+                          {p.name === 'Gold' && <Crown className="w-4 h-4 text-amber-500" />}
+                          {p.name}
+                        </span>
+                        {isCurrent && (
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white">
+                            Active
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="text-2xl font-black text-emerald-700">
+                          {p.ratePct}% <span className="text-xs font-bold text-slate-500">/ mo</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500">
+                          {(p.ratePct * 12).toFixed(1)}% Annual APY
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-slate-600 space-y-1 mb-4 pt-2 border-t border-slate-100">
+                        <div className="flex justify-between">
+                          <span>Min Entry:</span>
+                          <strong className="text-slate-900">${Number(p.price).toLocaleString()}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Monthly Yield:</span>
+                          <strong className="text-emerald-700">${pMonthlyYield.toLocaleString()}</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Referral:</span>
+                          <strong className="text-amber-800">{p.referralPct}%</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSelectNewTier(p)}
+                      className={`w-full py-2.5 rounded-xl font-bold text-xs transition cursor-pointer ${
+                        isCurrent
+                          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 hover:shadow-md'
+                      }`}
+                    >
+                      {isCurrent ? 'Current Plan' : `Switch to ${p.name}`}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions Band */}
       <div>
@@ -576,15 +805,15 @@ export function DashboardHome() {
 
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('upi')}
+                    onClick={() => setPaymentMethod('usdc')}
                     className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition cursor-pointer ${
-                      paymentMethod === 'upi'
+                      paymentMethod === 'usdc'
                         ? 'border-amber-500 bg-amber-50 text-amber-950 ring-1 ring-amber-500'
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     <CreditCard className="w-4 h-4 text-amber-600" />
-                    <span>Bank / UPI</span>
+                    <span>USDC (ERC20)</span>
                   </button>
 
                   <button
@@ -635,24 +864,24 @@ export function DashboardHome() {
                 </div>
               )}
 
-              {paymentMethod === 'upi' && (
+              {paymentMethod === 'usdc' && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
                   <div className="flex justify-between items-center text-slate-700 font-bold">
-                    <span>UPI VPA / Bank Details</span>
-                    <span className="text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono">Instant IMPS</span>
+                    <span>USDC Vault Address (ERC20)</span>
+                    <span className="text-[10px] text-sky-800 bg-sky-100 px-2 py-0.5 rounded font-mono">Ethereum / Polygon</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       readOnly
-                      value="investsecure@icici"
+                      value="0x71C8A184e9D9Bf06536F2c9f485Bcf978a63581F"
                       className="w-full px-3 py-2 text-xs font-mono bg-white border border-slate-200 rounded-lg text-slate-800"
                     />
                     <button
                       type="button"
-                      onClick={() => handleCopyAddress('investsecure@icici')}
+                      onClick={() => handleCopyAddress('0x71C8A184e9D9Bf06536F2c9f485Bcf978a63581F')}
                       className="p-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shrink-0 transition"
-                      title="Copy UPI"
+                      title="Copy USDC Vault Address"
                     >
                       {copiedAddress ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </button>
@@ -661,7 +890,7 @@ export function DashboardHome() {
                     type="text"
                     value={txHash}
                     onChange={(e) => setTxHash(e.target.value)}
-                    placeholder="Enter UPI UTR / Reference No. (Optional for Instant Demo)"
+                    placeholder="Enter Transfer TxID / Hash (Optional for Instant Demo)"
                     className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 mt-2"
                   />
                 </div>
