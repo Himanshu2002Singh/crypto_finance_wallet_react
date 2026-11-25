@@ -119,7 +119,7 @@ export function Referrals() {
           </div>
           <div className="text-sm text-gray-600 mb-1">Total Earned</div>
           <div className="text-3xl font-bold text-purple-600">
-            ₹ {stats.totalEarned.toLocaleString()}
+            $ {stats.totalEarned.toLocaleString()} <span className="text-xs text-gray-400">USD</span>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export function Referrals() {
           </div>
           <div className="text-sm text-gray-600 mb-1">Pending Earnings</div>
           <div className="text-3xl font-bold text-yellow-600">
-            ₹ {stats.pendingEarnings.toLocaleString()}
+            $ {stats.pendingEarnings.toLocaleString()} <span className="text-xs text-gray-400">USD</span>
           </div>
         </div>
       </div>
@@ -269,7 +269,7 @@ export function Referrals() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-semibold text-green-600">
-                      ₹ {referral.referralBonus.toLocaleString()}
+                      $ {referral.referralBonus.toLocaleString()}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

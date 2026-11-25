@@ -217,9 +217,9 @@ export function HeroSection() {
 
                 {/* Portfolio Balance & Growth */}
                 <div className="my-5">
-                  <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Total Portfolio Balance</div>
+                  <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Total Portfolio Balance (USD)</div>
                   <div className="mt-1 flex items-baseline gap-3">
-                    <span className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">₹ 2,450,000</span>
+                    <span className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">$ 2,450,000</span>
                     <span className="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                       <ArrowUpRight className="h-3 w-3 mr-0.5" />
                       +24.0% APY

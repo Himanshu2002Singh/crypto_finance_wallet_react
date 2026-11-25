@@ -7,7 +7,7 @@ const NAVBAR_HEIGHT = 72;
 
 const NAV_LINKS = [
   { label: 'Home', sectionId: 'home' },
-  { label: 'Why InvestPro', sectionId: 'why-us' },
+  { label: 'Why InvestZora', sectionId: 'why-us' },
   { label: 'Tier Plans', sectionId: 'plans' },
   { label: 'Investors', sectionId: 'investor' },
   { label: 'Intelligence', sectionId: 'blogs' },
@@ -93,10 +93,10 @@ export function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-slate-950 text-xl font-black tracking-tight flex items-center gap-1">
-                  Invest<span className="text-amber-600">Pro</span>
+                  Invest<span className="text-amber-600">Zora</span>
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">
-                  Wealth & Custody
+                  Wealth & Custody (USD)
                 </span>
               </div>
             </Link>

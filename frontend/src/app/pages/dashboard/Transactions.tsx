@@ -199,9 +199,9 @@ export function Transactions() {
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black text-slate-900">
-            ₹ {stats.totalSettled.toLocaleString()}
+            $ {stats.totalSettled.toLocaleString()} <span className="text-xs text-slate-400 font-bold">USD</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Disbursed to destination wallets</p>
+          <p className="text-[11px] text-slate-400 mt-1">Disbursed to destination crypto wallets</p>
         </div>
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm">
@@ -212,7 +212,7 @@ export function Transactions() {
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black text-amber-900">
-            ₹ {stats.pendingSum.toLocaleString()}
+            $ {stats.pendingSum.toLocaleString()} <span className="text-xs text-amber-700 font-bold">USD</span>
           </div>
           <p className="text-[11px] text-amber-700 mt-1">{stats.pendingCount} request(s) awaiting approval</p>
         </div>
@@ -221,13 +221,13 @@ export function Transactions() {
           <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
             <span>Compulsory Contact</span>
             <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <MessageSquare className="h-4 w-4" />
+              <ShieldCheck className="h-4 w-4" />
             </div>
           </div>
           <div className="text-base sm:text-lg font-black text-slate-900 truncate">
             {user?.phone || 'Not Linked'}
           </div>
-          <p className="text-[11px] text-emerald-600 font-semibold mt-1">WhatsApp Verified Channel</p>
+          <p className="text-[11px] text-emerald-600 font-semibold mt-1">Encrypted 2FA Security Channel</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -336,7 +336,7 @@ export function Transactions() {
 
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="text-sm font-black text-slate-900">
-                        ₹ {Number(item.amount).toLocaleString()}
+                        $ {Number(item.amount).toLocaleString()}
                       </div>
                     </td>
 
@@ -438,28 +438,28 @@ export function Transactions() {
               {/* Amount */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Withdrawal Amount (₹) *
+                  Withdrawal Amount ($ USD) *
                 </label>
                 <input
                   type="number"
                   step="1"
                   required
-                  min="100"
-                  placeholder="e.g. 10000"
+                  min="50"
+                  placeholder="e.g. 1000"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                 />
                 <div className="flex items-center gap-1.5 mt-2">
                   <span className="text-[10px] font-semibold text-slate-400">Quick Fill:</span>
-                  {[5000, 10000, 25000, 50000].map((amt) => (
+                  {[500, 1000, 2500, 5000].map((amt) => (
                     <button
                       key={amt}
                       type="button"
                       onClick={() => setFormData({ ...formData, amount: amt.toString() })}
                       className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold"
                     >
-                      ₹{amt.toLocaleString()}
+                      ${amt.toLocaleString()}
                     </button>
                   ))}
                 </div>

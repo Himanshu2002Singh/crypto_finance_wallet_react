@@ -21,7 +21,7 @@ const faqs = [
   {
     question: 'How do I fund my account and activate an investment plan?',
     answer:
-      'From your dashboard, navigate to "Invest Plans" to view all available tiers (Bronze ₹10,000, Silver ₹25,000, Gold ₹50,000). Selecting your preferred plan generates unique deposit instructions and confirms credits seamlessly.',
+      'From your dashboard, navigate to "Invest Plans" to view all available tiers (Bronze $10,000, Silver $25,000, Gold $50,000). Selecting your preferred plan generates unique deposit instructions and confirms credits seamlessly.',
   },
   {
     question: 'What security measures safeguard my capital and documents?',
@@ -31,7 +31,7 @@ const faqs = [
   {
     question: 'Who can I contact if I need personalized wealth assistance?',
     answer:
-      'Our dedicated investor support desk is active 24/7. You can reach out via your client dashboard ticketing center, email us at support@investpro.com, or speak with your assigned relationship manager.',
+      'Our dedicated investor concierge team responds to all inquiries within 24–48 hours. Direct phone lines are currently closed, but our official Telegram support and community channel will be launched soon. You can submit tickets via your client dashboard or email support@investzora.com.',
   },
 ];
 

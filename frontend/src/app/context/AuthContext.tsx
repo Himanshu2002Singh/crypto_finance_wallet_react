@@ -103,8 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const completeUser: UserProfile = {
         ...userData,
         userId: computedUserId,
-        phone: userData.phone || '+91 9876543210',
-        country: userData.country || 'India',
+        phone: userData.phone || '+1 415 800 2380',
+        country: userData.country || 'United States',
         bronzeReturnRate: userData.bronzeReturnRate || '1.5',
         silverReturnRate: userData.silverReturnRate || '2.0',
         goldReturnRate: userData.goldReturnRate || '2.5',
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If network fails (e.g. backend host not reachable or demo test), fall back gracefully to local session
       if (!err?.response || err?.code === 'ERR_NETWORK') {
         const cleanIdent = identifier.trim();
-        const email = cleanIdent.includes('@') ? cleanIdent.toLowerCase() : `${cleanIdent.toLowerCase()}@investpro.com`;
+        const email = cleanIdent.includes('@') ? cleanIdent.toLowerCase() : `${cleanIdent.toLowerCase()}@investzora.com`;
         const computedUserId = cleanIdent.includes('@')
           ? cleanIdent.split('@')[0].toUpperCase()
           : cleanIdent.toUpperCase();
@@ -132,8 +132,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           fullName: computedUserId,
           email,
           userId: computedUserId,
-          phone: '+91 9876543210',
-          country: 'India',
+          phone: '+1 415 800 2380',
+          country: 'United States',
           bronzeReturnRate: '1.5',
           silverReturnRate: '2.0',
           goldReturnRate: '2.5',

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Facebook, Twitter, Linkedin, X, Shield, FileText, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, X, Shield, FileText, Sparkles, Lock, CheckCircle2, Send, Clock, MessageSquare } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const quickLinks = [
   { label: 'Home', sectionId: 'home' },
-  { label: 'Why InvestPro', sectionId: 'why-us' },
+  { label: 'Why InvestZora', sectionId: 'why-us' },
   { label: 'Tier Plans', sectionId: 'plans' },
   { label: 'For Investors', sectionId: 'investor' },
   { label: 'Intelligence Desk', sectionId: 'blogs' },
@@ -53,48 +53,68 @@ export function Footer() {
               </div>
               <div className="flex flex-col">
                 <span className="text-slate-950 text-xl font-black tracking-tight flex items-center gap-1">
-                  Invest<span className="text-amber-600">Pro</span>
+                  Invest<span className="text-amber-600">Zora</span>
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">
-                  Institutional Wealth & Digital Custody
+                  Institutional Wealth & Digital Custody (USD)
                 </span>
               </div>
             </Link>
 
             <p className="text-slate-600 text-sm leading-relaxed max-w-sm">
-              Next-generation digital wealth management engine. Delivering predictable compounding returns through structured tier plans, biometric KYC, and cold vault reserve custody.
+              Next-generation digital asset wealth engine denominated in USD. Delivering transparent compounding returns through structured tier plans, biometric KYC, and cold vault reserve custody.
             </p>
 
             <div className="flex items-center gap-3">
               <a
-                href="https://www.facebook.com"
+                href="https://facebook.com/investzora"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="InvestPro Facebook"
-                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-500 hover:text-amber-600 transition shadow-sm"
+                aria-label="InvestZora Facebook"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-600 hover:text-amber-600 transition shadow-sm"
               >
                 <Facebook className="w-4 h-4" />
               </a>
 
               <a
-                href="https://www.twitter.com"
+                href="https://x.com/investzora"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="InvestPro Twitter"
-                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-500 hover:text-amber-600 transition shadow-sm"
+                aria-label="InvestZora Twitter (X)"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-600 hover:text-amber-600 transition shadow-sm"
               >
                 <Twitter className="w-4 h-4" />
               </a>
 
               <a
-                href="https://www.linkedin.com"
+                href="https://instagram.com/investzora"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="InvestPro LinkedIn"
-                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-500 hover:text-amber-600 transition shadow-sm"
+                aria-label="InvestZora Instagram"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-600 hover:text-pink-600 transition shadow-sm"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+
+              <a
+                href="https://linkedin.com/company/investzora"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="InvestZora LinkedIn"
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-amber-400 flex items-center justify-center text-slate-600 hover:text-blue-700 transition shadow-sm"
               >
                 <Linkedin className="w-4 h-4" />
               </a>
+            </div>
+
+            <div className="rounded-xl bg-amber-50/80 border border-amber-200/80 p-3 text-xs text-slate-600 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span>Client Support Desk</span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Support team responds within <strong>24–48 hours</strong>. Direct call lines are closed; official Telegram channel access coming soon!
+              </p>
             </div>
           </div>
 
@@ -119,7 +139,7 @@ export function Footer() {
           <div className="md:col-span-4 space-y-4">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-950">Custody & Compliance</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Reserves are independently accounted for with 100% cold vault segregation and algorithmic health auditing.
+              Global client reserves are held strictly in USD and major digital assets with 100% cold vault segregation.
             </p>
 
             <div className="space-y-2 pt-1 text-xs text-slate-600 font-medium">
@@ -129,11 +149,15 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>Zero Hidden Management Fees</span>
+                <span>Zero Hidden Custody Fees</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>24/7 Concierge Support Desk</span>
+                <span>Support Inquiries: Responds within 24–48 hours</span>
+              </div>
+              <div className="flex items-center gap-2 text-amber-800">
+                <Send className="h-4 w-4 text-sky-600" />
+                <span className="font-semibold">Official Telegram Community: Coming Soon</span>
               </div>
             </div>
 
@@ -158,7 +182,7 @@ export function Footer() {
         {/* Bottom Disclaimer & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <div>
-            &copy; {new Date().getFullYear()} InvestPro Platform. All rights reserved.
+            &copy; {new Date().getFullYear()} InvestZora Platform. All rights reserved.
           </div>
           <div className="text-[11px] text-slate-400 text-center sm:text-right">
             Design and Development by trustingbrain

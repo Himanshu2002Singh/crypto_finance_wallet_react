@@ -253,7 +253,7 @@ export function DashboardHome() {
       );
 
       toast.success(
-        `Success! ${selectedPlanForExecution.name} Tier Plan of ₹${investAmount.toLocaleString()} has been activated.`
+        `Success! ${selectedPlanForExecution.name} Tier Plan of $${investAmount.toLocaleString()} USD has been activated.`
       );
       setSelectedPlanForExecution(null);
     } catch (err: any) {
@@ -266,14 +266,14 @@ export function DashboardHome() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 rounded-3xl p-8 sm:p-10 text-slate-950 shadow-xl shadow-amber-500/15 border border-amber-300">
+      <div className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 rounded-3xl p-6 sm:p-10 text-slate-950 shadow-xl shadow-amber-500/15 border border-amber-300">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              <span>Investor Dashboard</span>
+              <span>Investor Dashboard (USD Vault)</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight mb-2">
               Welcome back, {user?.fullName || userId}!
             </h2>
             <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-900/90">
@@ -285,7 +285,7 @@ export function DashboardHome() {
               </span>
               {dashboard?.activePlan && (
                 <span className="bg-slate-950 text-amber-300 px-3 py-1 rounded-lg shadow-sm font-black">
-                  Active Plan: {dashboard.activePlan.name} (₹{Number(dashboard.activePlan.price).toLocaleString()})
+                  Active Plan: {dashboard.activePlan.name} (${Number(dashboard.activePlan.price).toLocaleString()} USD)
                 </span>
               )}
             </div>
@@ -374,7 +374,7 @@ export function DashboardHome() {
           {dashboard?.activePlan && (
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-black self-start sm:self-auto">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              <span>Current Active Plan: {dashboard.activePlan.name} (₹{Number(dashboard.activePlan.price).toLocaleString()})</span>
+              <span>Current Active Plan: {dashboard.activePlan.name} (${Number(dashboard.activePlan.price).toLocaleString()} USD)</span>
             </div>
           )}
         </div>
@@ -420,11 +420,11 @@ export function DashboardHome() {
                   {/* Initial Capital Entry */}
                   <div className="rounded-2xl bg-amber-50/50 p-4 mb-5 border border-amber-200/60">
                     <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 mb-1">
-                      <span>MINIMUM ENTRY</span>
+                      <span>MINIMUM ENTRY (USD)</span>
                       <span>FIXED PRICING</span>
                     </div>
                     <div className="text-3xl font-black text-slate-950">
-                      ₹ {Number(plan.price).toLocaleString()}
+                      $ {Number(plan.price).toLocaleString()}
                     </div>
                     <div className="mt-3 pt-2.5 border-t border-amber-200/60 flex items-center justify-between text-xs">
                       <div>
@@ -442,11 +442,11 @@ export function DashboardHome() {
                   <div className="rounded-xl bg-slate-50 p-3 mb-6 border border-slate-200 text-xs space-y-1.5">
                     <div className="flex justify-between text-slate-600">
                       <span>Monthly Yield:</span>
-                      <strong className="text-emerald-700">₹{(Number(plan.price) * plan.ratePct / 100).toLocaleString()}</strong>
+                      <strong className="text-emerald-700">${(Number(plan.price) * plan.ratePct / 100).toLocaleString()}</strong>
                     </div>
                     <div className="flex justify-between text-slate-600">
                       <span>1-Year Projected Net:</span>
-                      <strong className="text-slate-950">₹{(Number(plan.price) + Number(plan.price) * plan.ratePct / 100 * 12).toLocaleString()}</strong>
+                      <strong className="text-slate-950">${(Number(plan.price) + Number(plan.price) * plan.ratePct / 100 * 12).toLocaleString()}</strong>
                     </div>
                   </div>
                 </div>
@@ -516,21 +516,21 @@ export function DashboardHome() {
               {/* Amount Entry & Summary */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Investment Capital (INR)
+                  Investment Capital (USD)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-500 text-base">₹</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-500 text-base">$</span>
                   <input
                     type="number"
                     min={Number(selectedPlanForExecution.price)}
-                    step="5000"
+                    step="500"
                     value={investAmount}
                     onChange={(e) => setInvestAmount(Math.max(Number(selectedPlanForExecution.price), Number(e.target.value)))}
                     className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 bg-white font-black text-lg text-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
                 <div className="flex justify-between text-[11px] text-slate-500 mt-1.5">
-                  <span>Minimum for {selectedPlanForExecution.name}: ₹{Number(selectedPlanForExecution.price).toLocaleString()}</span>
+                  <span>Minimum for {selectedPlanForExecution.name}: ${Number(selectedPlanForExecution.price).toLocaleString()} USD</span>
                   <span className="font-bold text-amber-700">Yield: {selectedPlanForExecution.ratePct}% / Month</span>
                 </div>
               </div>
@@ -540,13 +540,13 @@ export function DashboardHome() {
                 <div className="flex justify-between text-slate-600 font-medium">
                   <span>Monthly Return:</span>
                   <strong className="text-emerald-700 font-bold">
-                    ₹{Math.round((investAmount * selectedPlanForExecution.ratePct) / 100).toLocaleString()} / month
+                    ${Math.round((investAmount * selectedPlanForExecution.ratePct) / 100).toLocaleString()} / month
                   </strong>
                 </div>
                 <div className="flex justify-between text-slate-600 font-medium">
                   <span>1-Year Projected Total:</span>
                   <strong className="text-slate-950 font-black">
-                    ₹{Math.round(investAmount + (investAmount * selectedPlanForExecution.ratePct * 12) / 100).toLocaleString()}
+                    ${Math.round(investAmount + (investAmount * selectedPlanForExecution.ratePct * 12) / 100).toLocaleString()}
                   </strong>
                 </div>
                 <div className="flex justify-between text-slate-600 font-medium">

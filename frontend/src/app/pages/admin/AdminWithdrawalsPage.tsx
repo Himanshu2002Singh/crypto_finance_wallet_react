@@ -154,7 +154,7 @@ export function AdminWithdrawalsPage() {
   const getWhatsAppUrl = (phone: string, name: string, amount: number | string, wallet: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const message = encodeURIComponent(
-      `Hello ${name}, this is InvestPro Compliance regarding your withdrawal request of ₹${Number(amount).toLocaleString()} to crypto wallet ${wallet}. Please verify if you authorized this withdrawal.`
+      `Hello ${name}, this is InvestZora Compliance regarding your withdrawal request of $${Number(amount).toLocaleString()} USD to crypto wallet ${wallet}. Please verify if you authorized this withdrawal.`
     );
     return `https://wa.me/${cleanPhone}?text=${message}`;
   };
@@ -343,7 +343,7 @@ export function AdminWithdrawalsPage() {
                       Withdrawal Amount
                     </span>
                     <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      ₹ {Number(req.amount).toLocaleString()}
+                      $ {Number(req.amount).toLocaleString()} USD
                     </span>
                   </div>
 
@@ -419,7 +419,7 @@ export function AdminWithdrawalsPage() {
 
             <div className="space-y-3 mb-5 text-xs text-slate-700">
               <p>
-                Approving settlement of <strong className="text-slate-900">₹{Number(approveDialog.withdrawal.amount).toLocaleString()}</strong> to:
+                Approving settlement of <strong className="text-slate-900">${Number(approveDialog.withdrawal.amount).toLocaleString()} USD</strong> to:
               </p>
               <div className="p-2 rounded bg-slate-50 font-mono text-[11px] break-all border border-slate-200">
                 {approveDialog.withdrawal.walletAddress} ({approveDialog.withdrawal.network})
@@ -492,7 +492,7 @@ export function AdminWithdrawalsPage() {
 
             <div className="space-y-3 mb-5 text-xs text-slate-700">
               <p>
-                Reject withdrawal of <strong className="text-slate-900">₹{Number(rejectDialog.withdrawal.amount).toLocaleString()}</strong> requested by <strong className="text-slate-900">{rejectDialog.withdrawal.user.fullName}</strong>.
+                Reject withdrawal of <strong className="text-slate-900">${Number(rejectDialog.withdrawal.amount).toLocaleString()} USD</strong> requested by <strong className="text-slate-900">{rejectDialog.withdrawal.user.fullName}</strong>.
               </p>
 
               <div>

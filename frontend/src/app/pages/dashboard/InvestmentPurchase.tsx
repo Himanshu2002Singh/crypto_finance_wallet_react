@@ -96,7 +96,7 @@ export function InvestmentPurchase() {
       };
       localStorage.setItem(`activePlan_${user?.id || userId}`, JSON.stringify(activeObj));
 
-      toast.success(`Success! ${selectedTier.name} Tier Plan of ₹${amount.toLocaleString()} has been activated!`);
+      toast.success(`Success! ${selectedTier.name} Tier Plan of $${amount.toLocaleString()} USD has been activated!`);
       navigate('/dashboard');
     } catch {
       toast.error('Unable to activate plan. Please retry.');
@@ -114,11 +114,11 @@ export function InvestmentPurchase() {
       <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 rounded-3xl p-8 text-slate-950 shadow-xl shadow-amber-500/15 border border-amber-300">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>Capital Allocation Studio</span>
+          <span>Capital Allocation Studio (USD Vault)</span>
         </div>
         <h1 className="text-3xl font-black mb-2">Select & Execute Investment Plan</h1>
         <p className="text-slate-900/90 text-sm max-w-xl font-medium">
-          Choose your investment tier, customize your deposit principal, and activate automated monthly return accruals.
+          Choose your investment tier, customize your deposit principal in USD, and activate automated monthly return accruals.
         </p>
       </div>
 
@@ -152,7 +152,7 @@ export function InvestmentPurchase() {
               </div>
               <p className="text-xs text-slate-500 mb-4">{t.tagline}</p>
               <div className="text-2xl font-black text-slate-950">
-                ₹{t.minPrice.toLocaleString()} <span className="text-xs font-semibold text-slate-500">min</span>
+                ${t.minPrice.toLocaleString()} <span className="text-xs font-semibold text-slate-500">min USD</span>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600 flex justify-between">
                 <span>Referral:</span>
@@ -167,21 +167,21 @@ export function InvestmentPurchase() {
       <div className="rounded-3xl border border-amber-200/80 bg-white p-7 sm:p-9 shadow-xl space-y-6">
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-            Selected Tier Investment Amount (INR)
+            Selected Tier Investment Amount (USD)
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">₹</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-lg">$</span>
             <input
               type="number"
               min={selectedTier.minPrice}
-              step="5000"
+              step="500"
               value={amount}
               onChange={(e) => setAmount(Math.max(selectedTier.minPrice, Number(e.target.value)))}
               className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-slate-200 font-black text-xl text-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
           <div className="flex justify-between text-xs text-slate-500 mt-2">
-            <span>Minimum Entry for {selectedTier.name}: ₹{selectedTier.minPrice.toLocaleString()}</span>
+            <span>Minimum Entry for {selectedTier.name}: ${selectedTier.minPrice.toLocaleString()} USD</span>
             <span className="font-bold text-amber-800">{selectedTier.ratePct}% Return Rate</span>
           </div>
         </div>
@@ -190,11 +190,11 @@ export function InvestmentPurchase() {
         <div className="rounded-2xl bg-amber-50/60 border border-amber-200 p-5 space-y-2.5 text-xs">
           <div className="flex justify-between text-slate-600">
             <span>Monthly Payout:</span>
-            <strong className="text-emerald-700 font-black text-sm">₹{monthlyYield.toLocaleString()} / month</strong>
+            <strong className="text-emerald-700 font-black text-sm">${monthlyYield.toLocaleString()} USD / month</strong>
           </div>
           <div className="flex justify-between text-slate-600">
             <span>1-Year Cumulative Return:</span>
-            <strong className="text-slate-950 font-black text-base">₹{annualTotal.toLocaleString()}</strong>
+            <strong className="text-slate-950 font-black text-base">${annualTotal.toLocaleString()} USD</strong>
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Direct Referral Commission:</span>
@@ -325,7 +325,7 @@ export function InvestmentPurchase() {
           disabled={isSubmitting}
           className="w-full py-4 rounded-xl font-black text-sm bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 transition disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>{isSubmitting ? 'Activating Plan...' : `Confirm & Activate ${selectedTier.name} Plan (₹${amount.toLocaleString()})`}</span>
+          <span>{isSubmitting ? 'Activating Plan...' : `Confirm & Activate ${selectedTier.name} Plan ($${amount.toLocaleString()} USD)`}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

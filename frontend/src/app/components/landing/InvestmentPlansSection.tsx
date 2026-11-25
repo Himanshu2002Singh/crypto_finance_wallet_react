@@ -214,9 +214,9 @@ export function InvestmentPlansSection() {
 
                     <div className="flex items-baseline gap-1.5 text-slate-950">
                       <span className="text-3xl sm:text-4xl font-black tracking-tight text-slate-950">
-                        ₹ {priceNumber.toLocaleString()}
+                        $ {priceNumber.toLocaleString()}
                       </span>
-                      <span className="text-xs font-semibold text-slate-500">/ Minimum</span>
+                      <span className="text-xs font-semibold text-slate-500">/ Minimum USD</span>
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-amber-200/60 flex items-center justify-between text-xs">
@@ -239,7 +239,7 @@ export function InvestmentPlansSection() {
                         <span>Profit Illustration</span>
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500">
-                        On ₹{priceNumber.toLocaleString()}
+                        On ${priceNumber.toLocaleString()} USD
                       </span>
                     </div>
 
@@ -247,16 +247,16 @@ export function InvestmentPlansSection() {
                       <div className="rounded-xl bg-amber-50/60 p-2.5 border border-amber-100">
                         <span className="text-slate-500 block text-[10px] font-semibold">Monthly Return</span>
                         <span className="text-emerald-700 font-black text-sm">
-                          ₹{meta.illustration.monthlyProfit.toLocaleString()}
+                          ${meta.illustration.monthlyProfit.toLocaleString()}
                           <span className="text-[10px] text-slate-500 font-medium"> / mo</span>
                         </span>
                       </div>
                       <div className="rounded-xl bg-amber-50/60 p-2.5 border border-amber-100">
                         <span className="text-slate-500 block text-[10px] font-semibold">1-Yr Total Net</span>
                         <span className="text-amber-800 font-black text-sm">
-                          ₹{meta.illustration.totalOneYear.toLocaleString()}
+                          ${meta.illustration.totalOneYear.toLocaleString()}
                           <span className="text-[10px] text-emerald-600 font-bold block">
-                            (+₹{meta.illustration.annualProfit.toLocaleString()} profit)
+                            (+${meta.illustration.annualProfit.toLocaleString()} profit)
                           </span>
                         </span>
                       </div>

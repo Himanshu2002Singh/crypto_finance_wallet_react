@@ -19,7 +19,7 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: optionalString(""),
   CLOUDINARY_API_KEY: optionalString(""),
   CLOUDINARY_API_SECRET: optionalString(""),
-  MAIL_FROM: optionalString("noreply@investpro.com"),
+  MAIL_FROM: optionalString("noreply@investzora.com"),
   MAIL_HOST: optionalString("smtp.gmail.com"),
   MAIL_PORT: z.preprocess(
     (val) => (val && String(val).trim() ? Number(val) : 587),
