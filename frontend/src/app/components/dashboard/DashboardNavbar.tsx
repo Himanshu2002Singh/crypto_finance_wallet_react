@@ -46,10 +46,13 @@ export function DashboardNavbar({
             {desktopCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           </button>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-            <h1 className="text-lg sm:text-2xl font-black text-slate-950 tracking-tight">Investor Dashboard</h1>
-            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 font-mono w-fit">
-              USD Vault • ID: {userId}
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black px-3.5 py-1 rounded-xl bg-amber-50 text-amber-950 border border-amber-300 font-mono shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              USD Vault
+            </span>
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 font-mono hidden sm:inline-block">
+              ID: {userId}
             </span>
           </div>
         </div>

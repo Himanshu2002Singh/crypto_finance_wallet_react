@@ -352,9 +352,6 @@ export function DashboardHome() {
               Welcome back, {user?.fullName || userId}!
             </h2>
             <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-slate-900/90">
-              <span className="bg-white/80 px-3 py-1 rounded-lg border border-amber-300/80 shadow-sm font-mono">
-                User ID: <strong className="text-slate-950">{userId}</strong>
-              </span>
               <span className="bg-white/80 px-3 py-1 rounded-lg border border-amber-300/80 shadow-sm">
                 Status: <strong className="text-emerald-800">Active Investor</strong>
               </span>
@@ -376,9 +373,9 @@ export function DashboardHome() {
             </a>
             <Link
               to="/dashboard/referrals"
-              className="bg-white/90 hover:bg-white text-slate-950 px-6 py-3.5 rounded-xl font-bold text-xs transition shadow-sm border border-amber-300"
+              className="bg-white/90 hover:bg-white text-slate-950 px-6 py-3.5 rounded-xl font-bold text-xs transition shadow-sm border border-amber-300 flex items-center gap-1.5"
             >
-              Referral Program
+              <span>Referral Program ({activePlan.referralPct}%)</span>
             </Link>
           </div>
         </div>

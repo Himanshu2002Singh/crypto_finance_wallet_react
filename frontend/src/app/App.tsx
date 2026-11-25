@@ -7,6 +7,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { DashboardHome } from './pages/dashboard/DashboardHome';
 import { InvestmentPurchase } from './pages/dashboard/InvestmentPurchase';
 import { Transactions } from './pages/dashboard/Transactions';
+import { WithdrawalRequest } from './pages/dashboard/WithdrawalRequest';
 import { Referrals } from './pages/dashboard/Referrals';
 import { Profile } from './pages/dashboard/Profile';
 import { Support } from './pages/dashboard/Support';
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="invest" element={<InvestmentPurchase />} />
           <Route path="investments" element={<Navigate to="/dashboard" replace />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="withdrawals" element={<WithdrawalRequest />} />
           <Route path="referrals" element={<Referrals />} />
           <Route path="profile" element={<Profile />} />
           <Route path="security" element={<Navigate to="/dashboard/profile" replace />} />

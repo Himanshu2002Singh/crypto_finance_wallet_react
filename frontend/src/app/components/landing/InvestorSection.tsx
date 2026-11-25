@@ -198,12 +198,12 @@ export function InvestorSection() {
         {/* Global Investor Platform Key Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="rounded-2xl bg-white border border-amber-200/70 p-5 text-center shadow-sm">
-            <div className="text-2xl sm:text-3xl font-black text-slate-950">$250M+</div>
-            <div className="text-xs font-semibold text-slate-500 mt-1">Capital Under Custody (USD)</div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-950">$25M+</div>
+            <div className="text-xs font-semibold text-slate-500 mt-1">Protected Portfolio Assets (USD)</div>
           </div>
           <div className="rounded-2xl bg-white border border-amber-200/70 p-5 text-center shadow-sm">
-            <div className="text-2xl sm:text-3xl font-black text-slate-950">15,000+</div>
-            <div className="text-xs font-semibold text-slate-500 mt-1">Verified Client Accounts</div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-950">1,500+</div>
+            <div className="text-xs font-semibold text-slate-500 mt-1">Active Verified Investors</div>
           </div>
           <div className="rounded-2xl bg-white border border-amber-200/70 p-5 text-center shadow-sm">
             <div className="text-2xl sm:text-3xl font-black text-emerald-700">100%</div>

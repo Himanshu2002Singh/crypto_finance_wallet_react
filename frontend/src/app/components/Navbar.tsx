@@ -10,8 +10,6 @@ const NAV_LINKS = [
   { label: 'Why InvestZora', sectionId: 'why-us' },
   { label: 'Tier Plans', sectionId: 'plans' },
   { label: 'Investors', sectionId: 'investor' },
-  { label: 'Intelligence', sectionId: 'blogs' },
-  { label: 'FAQs', sectionId: 'faq' },
 ] as const;
 
 function scrollToSection(sectionId: string) {

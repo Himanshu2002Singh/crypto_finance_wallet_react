@@ -18,7 +18,10 @@ import {
   ShieldCheck,
   Sparkles,
   Camera,
-  FileText
+  FileText,
+  Wallet,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 function parseDocuments(idProofUrl?: string | null): { front: string | null; back: string | null } {
@@ -69,6 +72,36 @@ export function Profile() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Permanent Payout Wallet Address State
+  const userId = user?.userId || (user?.email ? user.email.split('@')[0].toUpperCase() : 'INVESTOR');
+  const storageKey = `payout_wallet_${user?.id || userId}`;
+  const [walletAddress, setWalletAddress] = useState<string>(() => {
+    return localStorage.getItem(storageKey) || '';
+  });
+  const [savedWallet, setSavedWallet] = useState<string>(() => {
+    return localStorage.getItem(storageKey) || '';
+  });
+  const [copiedWallet, setCopiedWallet] = useState(false);
+
+  const handleSaveWallet = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!walletAddress || walletAddress.trim().length < 10) {
+      toast.error('Please enter a valid crypto wallet address.');
+      return;
+    }
+    const trimmed = walletAddress.trim();
+    localStorage.setItem(storageKey, trimmed);
+    setSavedWallet(trimmed);
+    toast.success('Payout wallet address permanently linked & locked to your profile!');
+  };
+
+  const handleCopyWallet = (addr: string) => {
+    navigator.clipboard.writeText(addr);
+    setCopiedWallet(true);
+    setTimeout(() => setCopiedWallet(false), 2000);
+    toast.success('Wallet address copied to clipboard');
+  };
 
   useEffect(() => {
     if (user) {
@@ -323,6 +356,104 @@ export function Profile() {
             </div>
           )}
         </form>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 💼 DESIGNATED PAYOUT & WITHDRAWAL WALLET (LOCKED & PERMANENT)   */}
+      {/* ============================================================== */}
+      <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 border border-amber-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-amber-100">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center shadow-sm">
+              <Wallet className="w-6 h-6 text-amber-700" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-950 flex items-center gap-2">
+                <span>Designated Payout & Withdrawal Wallet</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Permanently bound crypto wallet address for capital & profit withdrawals.
+              </p>
+            </div>
+          </div>
+          {savedWallet ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-black shadow-sm self-start sm:self-auto">
+              <Lock className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Permanently Bound & Locked</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold self-start sm:self-auto">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span>Wallet Not Linked</span>
+            </span>
+          )}
+        </div>
+
+        {savedWallet ? (
+          <div className="space-y-4">
+            <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Registered Wallet Address (USDT TRC20 / ERC20)
+                </span>
+                <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
+                  Non-Editable
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={savedWallet}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white font-mono text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleCopyWallet(savedWallet)}
+                  className="p-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition shrink-0 shadow-sm cursor-pointer"
+                  title="Copy Wallet Address"
+                >
+                  {copiedWallet ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-amber-50/70 border border-amber-200/80 p-4 flex items-start gap-3 text-xs text-amber-950 leading-relaxed">
+              <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block font-black text-amber-950 mb-0.5">Strict Security Protocol:</strong>
+                For institutional security and withdrawal safety, your registered payout address remains static and locked. All capital returns and yield withdrawal requests are automatically dispatched strictly to this verified destination.
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSaveWallet} className="space-y-4">
+            <div className="rounded-2xl bg-amber-50/50 border border-amber-200/80 p-5 space-y-3">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Enter Your Payout Wallet Address (USDT TRC20 or ERC20)
+              </label>
+              <input
+                type="text"
+                required
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
+                placeholder="e.g. TYdY8h7Qv3m3N8L6kK2v9xP1w4B7rE8uA or 0x71C8..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white font-mono text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+              />
+              <p className="text-[11px] text-slate-500">
+                Please double-check your address carefully. Once saved, this address will be permanently locked to your account for all withdrawal requests.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl font-black text-xs bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-md shadow-amber-500/20 hover:shadow-amber-500/30 transition flex items-center gap-2 cursor-pointer"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Save & Permanently Bind Payout Wallet</span>
+            </button>
+          </form>
+        )}
       </div>
 
       {/* ============================================================== */}

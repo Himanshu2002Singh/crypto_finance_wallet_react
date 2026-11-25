@@ -11,12 +11,14 @@ import {
   ChevronRight,
   X,
   Send,
+  ArrowDownCircle,
 } from 'lucide-react';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Coins, label: 'Investment Plans', path: '/dashboard/invest' },
   { icon: Receipt, label: 'Transactions', path: '/dashboard/transactions' },
+  { icon: ArrowDownCircle, label: 'Withdrawal Request', path: '/dashboard/withdrawals' },
   { icon: Users, label: 'Referral Program', path: '/dashboard/referrals' },
   { icon: User, label: 'Profile & KYC', path: '/dashboard/profile' },
   { icon: HelpCircle, label: 'Support Concierge', path: '/dashboard/support' },

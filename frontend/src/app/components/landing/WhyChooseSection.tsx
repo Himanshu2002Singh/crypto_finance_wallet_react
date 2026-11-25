@@ -58,8 +58,8 @@ const whyChooseFeatures = [
 ];
 
 const platformMetrics = [
-  { value: '$250M+', label: 'Protected Portfolio Assets (USD)' },
-  { value: '15,000+', label: 'Active Verified Investors' },
+  { value: '$25M+', label: 'Protected Portfolio Assets (USD)' },
+  { value: '1,500+', label: 'Active Verified Investors' },
   { value: '99.98%', label: 'Custody & API Uptime' },
   { value: '100%', label: 'Cold Reserve Backing' },
 ];
